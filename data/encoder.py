@@ -43,4 +43,7 @@ class CLIPEncoder:
         
         text_features /= text_features.norm(p=2, dim=-1, keepdim=True)
         
+        if len(text_features.size()) > 1:
+            text_features = text_features.squeeze(0)
+        
         return text_features
