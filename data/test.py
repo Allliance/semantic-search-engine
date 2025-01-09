@@ -1,5 +1,5 @@
 import torch
-from index import ProductsIndex
+from index import Index
 from encoder import CLIPEncoder
 
 device = "cuda" if torch.cuda.is_available() else "cpu"
@@ -7,7 +7,7 @@ device = "cuda" if torch.cuda.is_available() else "cpu"
 index_name = "test-index"
 
 
-index = ProductsIndex("test-index")
+index = Index("test-index")
 print("Indexer loaded")
 encoder = CLIPEncoder()
 print("CLIP encoder loaded")
@@ -30,7 +30,9 @@ print("Images encoded successfully! Now you can enter your query:")
 while True:
     query = input()
 
-    response = index.text_query(query)
+    query_embedding = encoder.encode_text(query)
+    
+    response = index.query(query_embedding)
     
     best_match = response['matches'][0]
     print("Best match ID:", best_match['id'])

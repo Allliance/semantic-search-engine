@@ -1,17 +1,16 @@
 from utils import init_pinecone
 
 
-class ProductsIndex:
+class Index:
     def __init__(self,
-                 index_name="products-index",
+                 index_name,
                  dimension=512,
                  ):
         self.index_name = index_name
         
         self.pc = init_pinecone(index_name, dimension)
     
-    def text_query(self, text):
-        query_embedding = self.encode_text(text)
+    def query(self, query_embedding):
 
         index = self.pc.Index(self.index_name)
 
