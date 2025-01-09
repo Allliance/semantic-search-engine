@@ -1,3 +1,6 @@
+# other files
+data/products_1.json
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
