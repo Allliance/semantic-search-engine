@@ -10,6 +10,13 @@ class Index:
         
         self.pc = init_pinecone(index_name, dimension)
     
+    def get_by_id(self, ids):
+        index = self.pc.Index(self.index_name)
+        
+        response = index.fetch(ids)
+        
+        return response['vectors']
+    
     def query(self, query_embedding):
 
         index = self.pc.Index(self.index_name)
@@ -24,14 +31,12 @@ class Index:
         
         return response
     
-    def upsert_embeddings(self, products):
-        vectors = []
-        for product in products:    
-            vectors += [{
-                "id": f"{product.id}#{i}",
-                "values": image_embedding.tolist(),
-                "metadata": {},
-                } for i, image_embedding in enumerate(product.image_embeddings)]
+    def upsert_embeddings(self, elements):    
+        vectors = [{
+            "id": el['id'],
+            "values": el['embedding'].tolist(),
+            "metadata": el['metadata'],
+            } for el in elements]
 
         index = self.pc.Index(self.index_name)
 

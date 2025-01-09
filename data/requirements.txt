@@ -2,3 +2,4 @@ torch
 transformers
 pinecone-client
 python-dotenv
+requests

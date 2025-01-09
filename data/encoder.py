@@ -19,10 +19,8 @@ class CLIPEncoder:
         self.preprocess = CLIPProcessor.from_pretrained(model_name)
     
     
-    def load_image_and_embedding(self, image_paths):
+    def encode_image(self, images):
                     
-        images = [Image.open(image_path) for image_path in image_paths]
-        
         inputs = self.preprocess(images=images, return_tensors="pt", padding=True).to(self.device)
         inputs = {key: value.to(self.device) for key, value in inputs.items()}
         
@@ -31,7 +29,7 @@ class CLIPEncoder:
         
         image_features /= image_features.norm(p=2, dim=-1, keepdim=True)
 
-        return image_features, inputs['pixel_values']
+        return image_features.cpu().numpy()
     
     def encode_text(self, text):
         inputs = self.preprocess(text=text, return_tensors="pt", padding=True)
