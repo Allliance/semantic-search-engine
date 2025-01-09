@@ -2,13 +2,9 @@ import json
 from index import Index
 from encoder import Encoder
 from product import Product
+import argparse
 
-# Configurable params
-LIM = 10
-INDEX_NAME = 'products-index'
-DIMENSION = 512
-VERBOSE = False
-INDEX_PRODUCTS = True
+args = {}
 
 # It can first be crawled, then saved to a file, and then loaded from the file
 PRODUCTS_FILE = 'products_1.json'
@@ -18,9 +14,12 @@ def index_products():
     with open(PRODUCTS_FILE, 'r', encoding='utf-8') as f:
         products_data = json.load(f)
 
-    products = [Product(product_data) for product_data in products_data[:LIM]]
+    if args.lim > 0:
+        products_data = products_data[:args.lim]
 
-    index = Index(INDEX_NAME, DIMENSION)
+    products = [Product(product_data) for product_data in products_data]
+
+    index = Index(args.index_name, args.dimension)
     print("Successfully loaded the index")
 
     encoder = Encoder()
@@ -44,7 +43,7 @@ def index_products():
             to_be_added_image_ids.append(image_ids[i])
         
         if len(to_be_added_images) == 0:
-            if VERBOSE:
+            if args.verbose:
                 print(f"Product {product.id} already exists in the index")
             continue
 
@@ -59,13 +58,13 @@ def index_products():
             
         index.upsert_embeddings(embeddings_dict)
         
-        if VERBOSE:
+        if args.verbose:
             print(f"Product {product.id} added to the index")
             
     print("All products have been indexed")
 
 def query_listener():
-    index = Index(INDEX_NAME, DIMENSION)
+    index = Index(args.index_name, args.dimension)
     encoder = Encoder()
     
     while True:
@@ -79,9 +78,30 @@ def query_listener():
         
         print(response)
 
-if __name__ == '__main__':
-    if INDEX_PRODUCTS:
-        index_products()
-        
-    query_listener()
+def main():
+    parser = argparse.ArgumentParser(description="Run the product indexing and query listener.")
+
+    parser.add_argument('--lim', type=int, default=10, help="Set the limit (default: 10)")
+    parser.add_argument('--index_name', type=str, default='products-index', help="Set the index name (default: 'products-index')")
+    parser.add_argument('--dimension', type=int, default=512, help="Set the dimension (default: 512)")
+    parser.add_argument('--verbose', action='store_true', help="Enable verbose mode (default: False)")
+    parser.add_argument('--index_products', action='store_true', default=False, help="Enable products indexing (default: False)")
+    parser.add_argument('--products_file', type=str, default='products_1.json', help="File path to the json of the products")
+
+    args = parser.parse_args()
+
+    if args.verbose:
+        if args.lim != -1:
+            print(f"limit products to first: {args.lim}")
+        print(f"index name: {args.index_name}")
+        print(f"dimension: {args.dimension}")
+        print(f"index products: {args.index_products}")
     
+    if args.index_products:
+        index_products()
+    
+    query_listener()
+
+if __name__ == '__main__':
+    main()
+
