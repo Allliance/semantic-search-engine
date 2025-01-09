@@ -1,11 +1,6 @@
 from transformers import CLIPProcessor, CLIPModel
 import torch
-from PIL import Image
-from torchvision import transforms
 import torch
-import os
-import numpy as np
-import matplotlib.pyplot as plt # type: ignore
 
 class CLIPEncoder:
     def __init__(self,

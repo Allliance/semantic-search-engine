@@ -13,4 +13,4 @@ COPY . .
 EXPOSE 5000
 
 # Command to run the service
-CMD ["gunicorn", "--bind", "0.0.0.0:5000", "main:app"]
+CMD ["python", "main.py"]
