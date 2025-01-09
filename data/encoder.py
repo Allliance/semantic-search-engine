@@ -15,7 +15,7 @@ class CLIPEncoder:
             device = "cuda" if torch.cuda.is_available() else "cpu"
         
         self.device = device
-        self.model = CLIPModel.from_pretrained(model_name, device=device)
+        self.model = CLIPModel.from_pretrained(model_name)
         self.preprocess = CLIPProcessor.from_pretrained(model_name)
     
     

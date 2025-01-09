@@ -8,7 +8,9 @@ index_name = "test-index"
 
 
 index = ProductsIndex("test-index")
+print("Indexer loaded")
 encoder = CLIPEncoder()
+print("CLIP encoder loaded")
 
 image_files = {
     'cat': 'test_images/cat.png',
@@ -19,8 +21,11 @@ image_files = {
 names = image_files.keys()
 image_paths = [image_files[name] for name in names]
 
+print("Encoding images ...")
 embeddings, images = encoder.load_image_and_embedding(image_paths)
 
+
+print("Images encoded successfully! Now you can enter your query:")
 
 while True:
     query = input()
