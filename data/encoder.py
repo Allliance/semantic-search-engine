@@ -2,7 +2,7 @@ from transformers import CLIPProcessor, CLIPModel
 import torch
 import torch
 
-class CLIPEncoder:
+class Encoder:
     def __init__(self,
                  device=None,
                  model_name="openai/clip-vit-base-patch32"):
