@@ -82,6 +82,7 @@ def index_products():
 
     with open(PRODUCTS_FILE, 'r', encoding='utf-8') as f:
         products_data = json.load(f)
+        products_data = [{k: v for k, v in p.items() if v is not None} for p in products_data]
 
     if LIMIT > 0:
         products_data = products_data[:LIMIT]
