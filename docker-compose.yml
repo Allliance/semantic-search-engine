@@ -2,16 +2,38 @@ version: '3.8'
 
 services:
   data-service:
-    build: ./data
+    build: ./data-service
     ports:
       - "5000:5000"
     volumes:
-      - ./products_1.json:/app/products_1.json
+      - ./data-service/products_1.json:/app/products_1.json
     environment:
       - INDEX_NAME=products-index
       - DIMENSION=512
       - PRODUCTS_FILE=products_1.json
       - LIMIT=10
       - VERBOSE=true
-      - FLASK_ENV=production
     restart: unless-stopped
+
+  backend:
+    build: ./backend
+    ports:
+      - "8000:8000"
+    environment:
+      - DEBUG=0
+      - DATA_SERVICE_URL=http://data-service:5000
+      - ALLOWED_HOSTS=localhost,127.0.0.1
+      - CORS_ALLOWED_ORIGINS=http://localhost:3000
+    volumes:
+      - ./backend:/app
+    depends_on:
+      - data-service
+    command: >
+      sh -c "python manage.py migrate &&
+             python manage.py collectstatic --noinput &&
+             python manage.py runserver 0.0.0.0:8000"
+    restart: unless-stopped
+
+networks:
+  default:
+    driver: bridge

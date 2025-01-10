@@ -1,2 +1,6 @@
-django
-djangorestframework
+# backend/requirements.txt
+Django==4.2.0
+djangorestframework==3.14.0
+requests==2.28.2
+python-dotenv==1.0.0
+django-cors-headers==4.1.0
