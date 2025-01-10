@@ -11,6 +11,7 @@ app = Flask(__name__)
 
 # Get configuration from environment variables
 INDEX_NAME = os.getenv('INDEX_NAME', 'products-index')
+INITIAL_INDEX = os.getenv('INITIAL_INDEX', 'false').lower() == 'true'
 DIMENSION = int(os.getenv('DIMENSION', '512'))
 PRODUCTS_FILE = os.getenv('PRODUCTS_FILE', 'products_1.json')
 LIMIT = int(os.getenv('LIMIT', '-1'))
@@ -137,7 +138,11 @@ if __name__ == '__main__':
     initialize_service()
     
     # Index initial products on startup
-    index_products()
+    if INITIAL_INDEX:
+        print("As INITIAL_INDEX is set to true, starting initial indexing")
+        index_products()
+    else:
+        print("INITIAL_INDEX is set to false, skipping initial indexing")
     
     # Start the Flask server
     app.run(host='0.0.0.0', port=5000)
