@@ -4,7 +4,9 @@ from encoder import Encoder
 from product import Product
 from flask import Flask, request, jsonify
 import os
+from dotenv import load_dotenv
 
+load_dotenv()
 app = Flask(__name__)
 
 # Get configuration from environment variables
