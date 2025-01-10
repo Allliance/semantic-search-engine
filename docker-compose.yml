@@ -16,7 +16,7 @@ services:
     restart: unless-stopped
 
   backend:
-    build: ./backend
+    build: ./searchengine
     ports:
       - "8000:8000"
     environment:
