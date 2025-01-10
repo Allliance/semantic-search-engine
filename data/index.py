@@ -23,13 +23,15 @@ class Index:
 
         response = index.query(
             vector=query_embedding.tolist(),
-            top_k=1,
+            top_k=20,
             include_values=True,
             # include_metadata=True,
             # filter={"genre": {"$eq": "action"}}
-        )
+        )['matches']
         
-        return response
+        
+        
+        return [record['id'] for record in response]
     
     def upsert_embeddings(self, elements):    
         vectors = [{

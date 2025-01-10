@@ -26,6 +26,6 @@ urlpatterns = [
     # Serve static files
     re_path(r'^static/(?P<path>.*)$', serve, {'document_root': settings.STATIC_ROOT}),
     
-    # Serve frontend - this should be last to catch all other URLs
-    re_path(r'^.*', TemplateView.as_view(template_name='index.html')),
+    # # Serve frontend - this should be last to catch all other URLs
+    # re_path(r'^.*', TemplateView.as_view(template_name='index.html')),
 ]

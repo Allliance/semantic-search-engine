@@ -1,7 +1,7 @@
-import json
 from index import Index
 from encoder import Encoder
-from product import Product
+from product import Product, ProductManager
+from utils import rank_products
 from flask import Flask, request, jsonify
 import os
 from dotenv import load_dotenv
@@ -20,6 +20,7 @@ VERBOSE = os.getenv('VERBOSE', 'false').lower() == 'true'
 # Global variables for our service
 index = None
 encoder = None
+product_manager = None
 
 def initialize_service():
     global index, encoder
@@ -27,12 +28,15 @@ def initialize_service():
     encoder = Encoder()
     print("Service initialized successfully")
 
-def index_single_product(product_data):
+def initialize_product_manager():
+    global product_manager
+    product_manager = ProductManager(PRODUCTS_FILE)
+
+def index_single_product(product):
     """Index a single product from its JSON data"""
     global index, encoder
     
     try:
-        product = Product(product_data)
         
         # Check for existing images
         image_ids = [f"{product.id}#{image_url}" for image_url in product.image_urls]
@@ -73,6 +77,8 @@ def index_single_product(product_data):
         raise Exception(f"Error indexing product: {str(e)}")
 
 def index_products():
+    global product_manager
+    
     """Index products from the initial products file"""
     print(f"Starting indexing with parameters:")
     print(f"Index name: {INDEX_NAME}")
@@ -81,18 +87,15 @@ def index_products():
     print(f"Limit: {LIMIT}")
     print(f"Verbose: {VERBOSE}")
 
-    with open(PRODUCTS_FILE, 'r', encoding='utf-8') as f:
-        products_data = json.load(f)
-        products_data = [{k: v for k, v in p.items() if v is not None} for p in products_data]
-
-    if LIMIT > 0:
-        products_data = products_data[:LIMIT]
-
-    for product_data in products_data:
+    products = product_manager.get_all_products()
+    
+    for product in products:
         try:
-            result = index_single_product(product_data)
+            result = index_single_product(product)
             if VERBOSE:
                 print(result["message"])
+            
+            product.recently_indexed = True
         except Exception as e:
             print(f"Error indexing product: {str(e)}")
             continue
@@ -105,13 +108,23 @@ def health_check():
 
 @app.route('/index_product', methods=['POST'])
 def index_product_endpoint():
+    global product_manager
     try:
         product_data = request.get_json()
         
         if not product_data:
             return jsonify({"error": "No product data provided"}), 400
         
+        new_product = Product(product_data)
+        
+        if product_manager.product_exists(new_product.id) and product_manager.products[new_product.id].recently_indexed:
+            return jsonify({"error": f"Product with id {new_product.id} already exists"}), 400
+        
         result = index_single_product(product_data)
+        
+        if not product_manager.product_exists(new_product.id):
+            product_manager.add_product(product=new_product)
+        
         return jsonify(result), 200
     
     except Exception as e:
@@ -119,23 +132,36 @@ def index_product_endpoint():
 
 @app.route('/query', methods=['POST'])
 def query_endpoint():
+    global index, encoder
+    
     try:
         data = request.get_json()
         query_text = data.get('query')
         
         if not query_text:
             return jsonify({"error": "Query text is required"}), 400
-
-        query_embedding = encoder.encode_text(query_text)
-        response = index.query(query_embedding)
-        
+        try:
+            query_embedding = encoder.encode_text(query_text)
+            top_image_ids = index.query(query_embedding)
+            top_ids = [image_id.split('#')[0] for image_id in top_image_ids]
+            
+            ranked_ids = rank_products(top_ids)
+            
+            response = product_manager.get_products_by_id(ranked_ids)
+        except Exception as e:
+            print("An exception occurred while querying the index")
+            print(str(e))
+        print(response)
         return jsonify({"results": response}), 200
     except Exception as e:
+        print(str(e))
         return jsonify({"error": str(e)}), 500
 
 if __name__ == '__main__':
     # Initialize the service
     initialize_service()
+    
+    initialize_product_manager()
     
     # Index initial products on startup
     if INITIAL_INDEX:

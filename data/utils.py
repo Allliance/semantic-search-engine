@@ -3,6 +3,16 @@ from pinecone import Pinecone, ServerlessSpec
 from dotenv import load_dotenv
 import os
 import matplotlib.pyplot as plt # type: ignore
+from collections import defaultdict
+
+def rank_products(product_ids):
+    all_ids = set(product_ids)
+    rank_sum = defaultdict(list)
+    
+    for i, pid in enumerate(product_ids):
+        rank_sum[pid].append(i)
+        
+    return sorted(all_ids, key=lambda x: sum(rank_sum[x]) / len(rank_sum[x]))
 
 def show_image(image):
     image = image.squeeze(0)
