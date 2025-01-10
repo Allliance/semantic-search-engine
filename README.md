@@ -106,13 +106,13 @@ Below are some preview images of how the interface looks in action:
 
 The intial page:
 
-![Demo 6](d0.png)
+![Demo 6](figures/d0.png)
 
 Some examples of search results:
 
-| ![Demo 0](d6.png) | ![Demo 1](d1.png) | ![Demo 2](d2.png) |
+| ![Demo 1](figures/d1.png) | ![Demo 2](figures/d2.png) | ![Demo 3](figures/d3.png) |
 |--------------------|--------------------|--------------------|
-| ![Demo 3](d3.png) | ![Demo 4](d4.png) | ![Demo 5](d5.png) |
+| ![Demo 4](figures/d4.png) | ![Demo 5](figures/d5.png) | ![Demo 6](figures/d6.png) |
 
 
 ---
