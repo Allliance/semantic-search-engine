@@ -11,6 +11,7 @@ class Encoder:
         
         self.device = device
         self.model = CLIPModel.from_pretrained(model_name)
+        self.model.to(self.device)
         self.preprocess = CLIPProcessor.from_pretrained(model_name)
     
     
