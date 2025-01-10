@@ -21,6 +21,12 @@ class Product:
             return Image.open(BytesIO(response.content))
         elif verbose:
             print(f"Failed to fetch image from {image_url}")
+    
+    def to_json(self):
+        return self.meta_data
+    
+    def to_dict(self):
+        return self.meta_data
 
 
 class ProductManager:

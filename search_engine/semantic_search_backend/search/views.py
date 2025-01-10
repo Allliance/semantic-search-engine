@@ -60,14 +60,12 @@ class SearchView(APIView):
             
             results = response.json()['results']
             
+            
             # Apply filters
             filtered_results = self.apply_filters(results, filters)
             
-            return Response({
-                "query": query,
-                "filters": filters,
-                "results": filtered_results
-            })
+            
+            return Response(filtered_results)
             
         except requests.RequestException as e:
             return Response(

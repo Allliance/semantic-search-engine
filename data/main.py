@@ -132,7 +132,7 @@ def index_product_endpoint():
 
 @app.route('/query', methods=['POST'])
 def query_endpoint():
-    global index, encoder
+    global index, encoder, product_manager
     
     try:
         data = request.get_json()
@@ -143,15 +143,14 @@ def query_endpoint():
         try:
             query_embedding = encoder.encode_text(query_text)
             top_image_ids = index.query(query_embedding)
-            top_ids = [image_id.split('#')[0] for image_id in top_image_ids]
-            
+            top_ids = [int(image_id.split('#')[0]) for image_id in top_image_ids]
             ranked_ids = rank_products(top_ids)
             
-            response = product_manager.get_products_by_id(ranked_ids)
+            response = [p.meta_data for p in product_manager.get_products_by_id(ranked_ids)]
         except Exception as e:
             print("An exception occurred while querying the index")
             print(str(e))
-        print(response)
+        
         return jsonify({"results": response}), 200
     except Exception as e:
         print(str(e))
