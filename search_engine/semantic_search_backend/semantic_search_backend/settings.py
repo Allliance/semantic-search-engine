@@ -140,7 +140,7 @@ DATABASES = {
     }
 }
 
-DATA_SERVICE_URL = os.getenv('DATA_SERVICE_URL', 'http://172.27.172.148:5000')
+DATA_SERVICE_URL = os.getenv('DATA_SERVICE_URL', 'http://localhost:5000')
 
 # Password validation
 # https://docs.djangoproject.com/en/4.2/ref/settings/#auth-password-validators
