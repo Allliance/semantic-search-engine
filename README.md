@@ -1,7 +1,5 @@
 # Semantic Search Engine
 
-A brief description of your project goes here, explaining its purpose and functionality. For example:
-
 **Semantic Search Engine** - A search engine to find your desired style only by describing what you have in your mind!
 
 ---
@@ -31,7 +29,7 @@ A brief description of your project goes here, explaining its purpose and functi
 
 ### Deployment Mode
 
-If you want to run the project in **deployment mode**, use the following command:
+If you want to run the project in **deployment mode**, just use the following command:
 
 ```bash
 docker compose up searchengine
@@ -106,13 +104,13 @@ Below are some preview images of how the interface looks in action:
 
 The intial page:
 
-![Demo 6](d0.png)
+![Demo 6](figures/d0.png)
 
 Some examples of search results:
 
-| ![Demo 0](d6.png) | ![Demo 1](d1.png) | ![Demo 2](d2.png) |
+| ![Demo 1](figures/d1.png) | ![Demo 2](figures/d2.png) | ![Demo 3](figures/d3.png) |
 |--------------------|--------------------|--------------------|
-| ![Demo 3](d3.png) | ![Demo 4](d4.png) | ![Demo 5](d5.png) |
+| ![Demo 4](figures/d4.png) | ![Demo 5](figures/d5.png) | ![Demo 6](figures/d6.png) |
 
 
 ---
@@ -131,13 +129,5 @@ The project requires certain environment variables to be set up in a `.env` file
    - Add additional `.env` variables here, with a description of their usage.
 
 > Ensure the `.env` file is located in the root directory or appropriately configured for each service.
-
----
-
-## License
-
-Provide licensing details here, if applicable. Example:
-
-This project is licensed under the [MIT License](LICENSE).
 
 ---
