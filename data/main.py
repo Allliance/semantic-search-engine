@@ -136,41 +136,20 @@ def index_product_endpoint():
 
 VALID_STATUSES = ['IN_STOCK', 'OUT_OF_STOCK']
 
-@app.route('/categories', methods=['GET'])
-def get_categories():
+@app.route('/enums', methods=['GET'])
+def get_enums():
     global product_manager
-    categories = set()
-    for product in product_manager.get_all_products():
-        if 'category_name' in product.meta_data:
-            categories.add(product.meta_data['category_name'])
-    return jsonify({"categories": list(categories)}), 200
-
-@app.route('/currencies', methods=['GET'])
-def get_currencies():
-    global product_manager
-    currencies = set()
-    for product in product_manager.get_all_products():
-        if 'currency' in product.meta_data:
-            currencies.add(product.meta_data['currency'])
-    return jsonify({"currencies": list(currencies)}), 200
-
-@app.route('/shops', methods=['GET'])
-def get_shops():
-    global product_manager
-    shops = set()
-    for product in product_manager.get_all_products():
-        if 'shop_name' in product.meta_data:
-            shops.add(product.meta_data['shop_name'])
-    return jsonify({"shops": list(shops)}), 200
-
-@app.route('/regions', methods=['GET'])
-def get_regions():
-    global product_manager
-    regions = set()
-    for product in product_manager.get_all_products():
-        if 'region' in product.meta_data:
-            regions.add(product.meta_data['region'])
-    return jsonify({"regions": list(regions)}), 200
+    categories = product_manager.enum_caches['all_category_name']
+    currencies = product_manager.enum_caches['all_currency']
+    shops = product_manager.enum_caches['all_shop_name']
+    regions = product_manager.enum_caches['all_region']
+    
+    return jsonify({
+        "categories": categories,
+        "currencies": currencies,
+        "shops": shops,
+        "regions": regions
+    }), 200
 
 @app.route('/query', methods=['POST'])
 def query_endpoint():

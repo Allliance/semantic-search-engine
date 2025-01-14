@@ -3,90 +3,239 @@
 <html lang="en">
 
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Fashion Search</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/noUiSlider/15.7.1/nouislider.min.css">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/noUiSlider/15.7.1/15.7.1/nouislider.min.js"></script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Fashion Search</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/noUiSlider/15.7.1/nouislider.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/noUiSlider/15.7.1/nouislider.min.js"></script>
 
-    <link rel="stylesheet" href="{% static 'search/css/style.css?v=1' %}">
+<link rel="stylesheet" href="{% static 'search/css/style.css?v=1' %}">
+
+<style>
+.search-box {
+display: flex;
+gap: 10px;
+justify-content: center;
+align-items: center;
+margin-bottom: 20px;
+}
+
+.filter-button {
+background: #4CAF50;
+color: white;
+border: none;
+padding: 10px 20px;
+border-radius: 5px;
+cursor: pointer;
+display: flex;
+align-items: center;
+gap: 8px;
+transition: all 0.3s ease;
+}
+
+.filter-button:hover {
+background: #45a049;
+}
+
+.filter-button i {
+font-size: 16px;
+}
+
+.filter-panel {
+max-height: 0;
+overflow: hidden;
+transition: max-height 0.5s ease-in-out;
+background: #f9f9f9;
+border-radius: 10px;
+margin: 0 auto;
+width: 90%;
+max-width: 800px;
+box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.filter-panel.open {
+max-height: 800px;
+margin-bottom: 20px;
+}
+
+.filter-content {
+padding: 20px;
+}
+
+.filter-section {
+margin-bottom: 20px;
+}
+
+.filter-section h4 {
+color: #333;
+margin-bottom: 10px;
+font-size: 16px;
+}
+
+.price-range-container {
+padding: 10px;
+}
+
+.price-inputs {
+display: flex;
+gap: 10px;
+align-items: center;
+margin-top: 10px;
+}
+
+.price-inputs input {
+width: 100px;
+padding: 5px;
+border: 1px solid #ddd;
+border-radius: 4px;
+}
+
+.category-options, .status-options {
+display: grid;
+grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+gap: 10px;
+}
+
+.category-options label, .status-options label {
+display: flex;
+align-items: center;
+gap: 5px;
+cursor: pointer;
+}
+
+.apply-filters {
+background: #4CAF50;
+color: white;
+border: none;
+padding: 10px 20px;
+border-radius: 5px;
+cursor: pointer;
+width: 100%;
+margin-top: 20px;
+transition: background 0.3s ease;
+}
+
+.apply-filters:hover {
+background: #45a049;
+}
+
+/* Animation for content shift */
+.products-grid {
+transition: transform 0.5s ease-in-out;
+}
+
+.products-grid.shifted {
+transform: translateY(20px);
+}
+</style>
 </head>
-
 <body>
     <div class="search-container">
-        <h1 class="search-title">Imagine your style here!</h1>
-        <div class="search-box">
-            <input type="text" class="search-input" placeholder="Search for clothes...">
-            <button class="search-button">
-                <i class="fas fa-search"></i>
-            </button>
-        </div>
-
-        <div class="filter-panel"><button class="filter-toggle">
-            <i class="fas fa-filter"></i>
-            <span>Filters</span>
-            </button>
-            <div class="filter-content">
-            <h3>Filters</h3>
-            
-            <!-- Price Range -->
-            <div class="filter-section">
-                <h4>Price Range</h4>
-                <div class="price-range-container">
-                    <div class="range-slider">
-                        <input type="range" id="priceMin" min="0" max="1000" value="0" class="min-price">
-                        <input type="range" id="priceMax" min="0" max="1000" value="1000" class="max-price">
-                    </div>
-                    <div class="price-inputs">
-                        <input type="number" id="minPrice" placeholder="Min" value="0">
-                        <span>-</span>
-                        <input type="number" id="maxPrice" placeholder="Max" value="1000">
-                    </div>
-                </div>
-            </div>
-            
-            <!-- Categories -->
-            <div class="filter-section">
-            <h4>Categories</h4>
-            <div class="category-options">
-            <label><input type="checkbox" value="shirts"> Shirts</label>
-            <label><input type="checkbox" value="pants"> Pants</label>
-            <label><input type="checkbox" value="dresses"> Dresses</label>
-            <label><input type="checkbox" value="shoes"> Shoes</label>
-            </div>
-            </div>
-            
-            <!-- Status -->
-            <div class="filter-section">
-            <h4>Status</h4>
-            <div class="status-options">
-            <label><input type="radio" name="status" value="" checked> All</label>
-            <label><input type="radio" name="status" value="IN_STOCK"> In Stock</label>
-            <label><input type="radio" name="status" value="OUT_OF_STOCK"> Out of Stock</label>
-            </div>
-            </div>
-            
-            <!-- Apply Filters Button -->
-            <button class="apply-filters">Apply Filters</button>
-        </div>
-
+    <h1 class="search-title">Imagine your style here!</h1>
+    
+    <div class="search-box">
+    <div class="input-group">
+    <input type="text" class="search-input" placeholder="Search for clothes...">
+    <button class="search-button">
+    <i class="fas fa-search"></i>
+    </button>
     </div>
-        <div class="loading-spinner"></div>
-        <div class="products-grid"></div>
-
+    <button class="filter-toggle" id="filter-button">
+    <i class="fas fa-filter"></i>
+    <span>Filters</span>
+    </button>
+    </div>
+    
+    <div class="filter-panel">
+    <div class="filter-content">
+    <h3>Filters</h3>
+    
+    <!-- Price Range -->
+    <div class="filter-section">
+    <div class="filter-title">Price Range</div>
+    <div class="price-inputs">
+    <input type="number" id="minPrice" placeholder="Min" min="0">
+    <span>-</span>
+    <input type="number" id="maxPrice" placeholder="Max" min="0">
+    <select id="currency" class="currency-select">
+    <option value="">Select currency</option>
+    {% for currency in currencies %}
+    <option value="{{ currency }}">{{ currency }}</option>
+    {% endfor %}
+    </select>
+    </div>
+    </div>
+    
+    <!-- Regions -->
+    <div class="filter-section">
+    <div class="filter-title">Region</div>
+    <select id="region" class="region-select">
+    <option value="">Select region</option>
+    {% for region in regions %}
+    <option value="{{ region }}">{{ region }}</option>
+    {% endfor %}
+    </select>
+    </div>
+    
+    <!-- Categories -->
+    <div class="filter-section">
+    <div class="filter-title">Categories</div>
+    <div class="checkbox-grid">
+    {% for category in categories %}
+    <label>
+    <input type="checkbox" name="categories" value="{{ category }}">
+    {{ category }}
+    </label>
+    {% endfor %}
+    </div>
+    </div>
+    
+    <!-- Shops -->
+    <div class="filter-section">
+    <div class="filter-title">Shops</div>
+    <div class="checkbox-grid">
+    {% for shop in shops %}
+    <label>
+    <input type="checkbox" name="shops" value="{{ shop }}">
+    {{ shop }}
+    </label>
+    {% endfor %}
+    </div>
+    </div>
+    
+    <!-- Status -->
+    <div class="filter-section">
+    <div class="filter-title">Status</div>
+    <div class="status-options">
+    <label><input type="radio" name="status" value="" checked> All</label>
+    <label><input type="radio" name="status" value="IN_STOCK"> In Stock</label>
+    <label><input type="radio" name="status" value="OUT_OF_STOCK"> Out of Stock</label>
+    </div>
+    </div>
+    
+    <!-- Apply Filters Button -->
+    <button class="apply-filters">Apply Filters</button>
+    </div>
+    </div>
+    
+    <div class="loading-spinner"></div>
+    <div class="products-grid"></div>
+    </div>
+    
     <div class="modal">
-        <div class="modal-content animate__animated animate__fadeIn">
-            <span class="close-modal">&times;</span>
-            <div class="modal-grid">
-                <div class="modal-images"></div>
-                <div class="modal-details"></div>
-            </div>
-        </div>
+    <div class="modal-content animate__animated animate__fadeIn">
+    <span class="close-modal">&times;</span>
+    <div class="modal-grid">
+    <div class="modal-images"></div>
+    <div class="modal-details"></div>
+    </div>
+    </div>
     </div>
 
-    <script src="{% static 'search/js/products.js' %}"></script>
-</body>
+<script src="{% static 'search/js/filter.js' %}"></script>
 
+<script src="{% static 'search/js/products.js' %}"></script>
+</body>
 </html>

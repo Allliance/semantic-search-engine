@@ -11,16 +11,50 @@ from .validators import FilterValidator
 from rest_framework.exceptions import ValidationError
 from typing import Dict, Any, List
 
+def get_valid_categories() -> List[str]:
+        # Implement fetching categories from backend
+        response = requests.get(f"{settings.DATA_SERVICE_URL}/categories")
+        response.raise_for_status()
+        return response.json()['categories']
+
+def get_valid_currencies() -> List[str]:
+    # Implement fetching currencies from backend
+    response = requests.get(f"{settings.DATA_SERVICE_URL}/currencies")
+    response.raise_for_status()
+    return response.json()['currencies']
+
+def get_valid_shops() -> List[str]:
+    # Implement fetching shops from backend
+    response = requests.get(f"{settings.DATA_SERVICE_URL}/shops")
+    response.raise_for_status()
+    return response.json()['shops']
+
+def get_valid_regions() -> List[str]:
+    # Implement fetching regions from backend
+    response = requests.get(f"{settings.DATA_SERVICE_URL}/regions")
+    response.raise_for_status()
+    return response.json()['regions']
+
 class SearchPageView(TemplateView):
     template_name = 'search/page.html'
     
     def get_context_data(self, **kwargs):
+        response = requests.get(f"{settings.DATA_SERVICE_URL}/enums")
+        response.raise_for_status()
+        enums = response.json()
         context = super().get_context_data(**kwargs)
+        context.update({
+        'categories': enums.get('categories'),
+        'currencies': enums.get('currencies'),
+        'shops': enums.get('shops'),
+        'regions': enums.get('regions'),
+        })
         # Add any initial context data needed for the template
         context['initial_data'] = {
             'query': '',
             'filters': {}
         }
+        
         return context
 
 class SearchView(APIView):
@@ -28,29 +62,33 @@ class SearchView(APIView):
         try:
             # Extract query parameters
             query = request.GET.get('query')
-            filters_str = request.GET.get('filters', '{}')
             
             # Test handling
             if query == 'test':
                 with open("test_products.json") as f:
                     return Response(json.load(f))
             
-            try:
-                filters = json.loads(filters_str)
-            except json.JSONDecodeError:
-                return Response(
-                    {"error": "Invalid filters JSON format"},
-                    status=status.HTTP_400_BAD_REQUEST
-                )
-
-            # Validate filters
-            self.validate_filters(filters)
-            
             # Create data dictionary for serializer
             data = {
                 'query': query,
-                'filters': filters
+                'category_name': request.GET.get('category_name'),
+                'currency': request.GET.get('currency'),
+                'min_current_price': request.GET.get('min_current_price'),
+                'max_current_price': request.GET.get('max_current_price'),
+                'update_date': request.GET.get('update_date'),
+                'shop_name': request.GET.get('shop_name'),
+                'status': request.GET.get('status'),
+                'region': request.GET.get('region'),
+                'off_percent': request.GET.get('off_percent')
             }
+            
+            # Convert string values to appropriate types
+            if data['min_current_price']:
+                data['min_current_price'] = float(data['min_current_price'])
+            if data['max_current_price']:
+                data['max_current_price'] = float(data['max_current_price'])
+            if data['off_percent']:
+                data['off_percent'] = float(data['off_percent'])
             
             log_search_request(f"Request parameters: {data}")
             
@@ -63,11 +101,13 @@ class SearchView(APIView):
                 )
             
             # Get validated data
-            query = serializer.validated_data['query']
-            filters = serializer.validated_data['filters']
+            validated_data = serializer.validated_data
+            
+            # Validate individual fields against backend data
+            self.validate_fields(validated_data)
             
             # Prepare filters for data service
-            data_service_filters = self.prepare_filters_for_data_service(filters)
+            data_service_filters = self.prepare_filters_for_data_service(validated_data)
             
             # Call the data service
             requests.get(f"{settings.DATA_SERVICE_URL}/health")
@@ -75,16 +115,14 @@ class SearchView(APIView):
             response = requests.post(
                 f"{settings.DATA_SERVICE_URL}/query",
                 json={
-                    "query": query,
+                    "query": validated_data['query'],
                     "filters": data_service_filters
                 }
             )
         
             response.raise_for_status()
-                
             results = response.json()['results']
             
-        
             return Response(results)
             
         except ValidationError as e:
@@ -103,98 +141,83 @@ class SearchView(APIView):
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
 
-    def validate_filters(self, filters: Dict[str, Any]) -> None:
-        """Validate all filter fields"""
-        if not filters:
-            return
+    def validate_fields(self, validated_data: Dict[str, Any]) -> None:
+        """Validate individual fields against backend data"""
+        errors = {}
 
-        # Get valid options from backend (you'll need to implement these methods)
-        valid_categories = self.get_valid_categories()
-        valid_currencies = self.get_valid_currencies()
-        valid_shops = self.get_valid_shops()
-        valid_regions = self.get_valid_regions()
+        # Get valid options from backend
+        valid_categories = get_valid_categories()
+        valid_currencies = get_valid_currencies()
+        valid_shops = get_valid_shops()
+        valid_regions = get_valid_regions()
 
-        # Validate individual filters
-        if 'category_name' in filters:
-            FilterValidator.validate_category(filters['category_name'], valid_categories)
-        
-        if 'currency' in filters:
-            FilterValidator.validate_currency(filters['currency'], valid_currencies)
-        
-        if 'min_current_price' in filters or 'max_current_price' in filters:
-            min_price = float(filters.get('min_current_price', 0))
-            max_price = float(filters.get('max_current_price', float('inf')))
-            currency = filters.get('currency')
-            FilterValidator.validate_price_range(min_price, max_price, currency)
-        
-        if 'update_date' in filters:
-            FilterValidator.validate_update_date(filters['update_date'])
-        
-        if 'shop_name' in filters:
-            FilterValidator.validate_shop(filters['shop_name'], valid_shops)
-        
-        if 'status' in filters:
-            if filters['status']:
-                FilterValidator.validate_status(filters['status'])
-        
-        if 'region' in filters:
-            FilterValidator.validate_region(filters['region'], valid_regions)
-        
-        if 'off_percent' in filters:
-            FilterValidator.validate_off_percent(float(filters['off_percent']))
+        if category_name := validated_data.get('category_name'):
+            try:
+                FilterValidator.validate_category(category_name, valid_categories)
+            except ValidationError as e:
+                errors['category_name'] = e.detail
 
-    def prepare_filters_for_data_service(self, filters: Dict[str, Any]) -> Dict[str, Any]:
+        if currency := validated_data.get('currency'):
+            try:
+                FilterValidator.validate_currency(currency, valid_currencies)
+            except ValidationError as e:
+                errors['currency'] = e.detail
+
+        if shop_name := validated_data.get('shop_name'):
+            try:
+                FilterValidator.validate_shop(shop_name, valid_shops)
+            except ValidationError as e:
+                errors['shop_name'] = e.detail
+
+        if region := validated_data.get('region'):
+            try:
+                FilterValidator.validate_region(region, valid_regions)
+            except ValidationError as e:
+                errors['region'] = e.detail
+
+        if status := validated_data.get('status'):
+            try:
+                FilterValidator.validate_status(status)
+            except ValidationError as e:
+                errors['status'] = e.detail
+
+        if update_date := validated_data.get('update_date'):
+            try:
+                FilterValidator.validate_update_date(update_date)
+            except ValidationError as e:
+                errors['update_date'] = e.detail
+
+        if errors:
+            raise ValidationError(errors)
+
+    def prepare_filters_for_data_service(self, validated_data: Dict[str, Any]) -> Dict[str, Any]:
         """Prepare filters in the format expected by the data service"""
         prepared_filters = {}
         
-        if 'category_name' in filters:
-            prepared_filters['category'] = filters['category_name']
+        if category_name := validated_data.get('category_name'):
+            prepared_filters['category'] = category_name
         
-        if 'min_current_price' in filters or 'max_current_price' in filters:
+        if (validated_data.get('min_current_price') is not None or 
+            validated_data.get('max_current_price') is not None):
             prepared_filters['price'] = {
-                'min': float(filters.get('min_current_price', 0)),
-                'max': float(filters.get('max_current_price', float('inf'))),
-                'currency': filters['currency']
+                'min': validated_data.get('min_current_price', 0),
+                'max': validated_data.get('max_current_price', float('inf')),
+                'currency': validated_data['currency']
             }
         
-        if 'update_date' in filters:
-            prepared_filters['update_date'] = filters['update_date']
+        if update_date := validated_data.get('update_date'):
+            prepared_filters['update_date'] = update_date
         
-        if 'shop_name' in filters:
-            prepared_filters['shop'] = filters['shop_name']
+        if shop_name := validated_data.get('shop_name'):
+            prepared_filters['shop'] = shop_name
         
-        if 'status' in filters:
-            prepared_filters['status'] = filters['status']
+        if status := validated_data.get('status'):
+            prepared_filters['status'] = status
         
-        if 'region' in filters:
-            prepared_filters['region'] = filters['region']
+        if region := validated_data.get('region'):
+            prepared_filters['region'] = region
         
-        if 'off_percent' in filters:
-            prepared_filters['discount'] = float(filters['off_percent'])
+        if off_percent := validated_data.get('off_percent'):
+            prepared_filters['discount'] = off_percent
         
         return prepared_filters
-
-    # Methods to fetch valid options from backend
-    def get_valid_categories(self) -> List[str]:
-        # Implement fetching categories from backend
-        response = requests.get(f"{settings.DATA_SERVICE_URL}/categories")
-        response.raise_for_status()
-        return response.json()['categories']
-
-    def get_valid_currencies(self) -> List[str]:
-        # Implement fetching currencies from backend
-        response = requests.get(f"{settings.DATA_SERVICE_URL}/currencies")
-        response.raise_for_status()
-        return response.json()['currencies']
-
-    def get_valid_shops(self) -> List[str]:
-        # Implement fetching shops from backend
-        response = requests.get(f"{settings.DATA_SERVICE_URL}/shops")
-        response.raise_for_status()
-        return response.json()['shops']
-
-    def get_valid_regions(self) -> List[str]:
-        # Implement fetching regions from backend
-        response = requests.get(f"{settings.DATA_SERVICE_URL}/regions")
-        response.raise_for_status()
-        return response.json()['regions']

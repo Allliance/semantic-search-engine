@@ -1,4 +1,4 @@
-document.addEventListener('DOMContentLoaded', function () {
+document.addEventListener('DOMContentLoaded', function() {
     const searchContainer = document.querySelector('.search-container');
     const searchInput = document.querySelector('.search-input');
     const searchButton = document.querySelector('.search-button');
@@ -7,79 +7,7 @@ document.addEventListener('DOMContentLoaded', function () {
     const closeModal = document.querySelector('.close-modal');
     const loadingSpinner = document.querySelector('.loading-spinner');
 
-    // Filter Panel Functionality
-    const minPriceInput = document.getElementById('minPrice');
-    const maxPriceInput = document.getElementById('maxPrice');
-    const minSlider = document.getElementById('priceMin');
-    const maxSlider = document.getElementById('priceMax');
-
-    function updateSliderRange() {
-        const min = parseInt(minSlider.value);
-        const max = parseInt(maxSlider.value);
-
-        if (min > max) {
-            if (this === minSlider) {
-                maxSlider.value = min;
-                maxPriceInput.value = min;
-            } else {
-                minSlider.value = max;
-                minPriceInput.value = max;
-            }
-        } else {
-            minPriceInput.value = min;
-            maxPriceInput.value = max;
-        }
-    }
-
-    // minSlider.addEventListener('input', updateSliderRange);
-    // maxSlider.addEventListener('input', updateSliderRange);
-
-    // minPriceInput.addEventListener('change', function() {
-    //     const value = parseInt(this.value);
-    //     if (value > parseInt(maxPriceInput.value)) {
-    //         this.value = maxPriceInput.value;
-    //     }
-    //     minSlider.value = this.value;
-    // });
-
-    // maxPriceInput.addEventListener('change', function() {
-    //     const value = parseInt(this.value);
-    //     if (value < parseInt(minPriceInput.value)) {
-    //         this.value = minPriceInput.value;
-    //     }
-    //     maxSlider.value = this.value;
-    // });
-
-    // // Filter Panel Toggle
-    const filterToggle = document.querySelector('.filter-toggle');
-    const filterPanel = document.querySelector('.filter-panel');
-    const applyFiltersBtn = document.querySelector('.apply-filters');
-
-    // Toggle filter panel
-    filterToggle.addEventListener('click', () => {
-        filterPanel.classList.toggle('open');
-    });
-
-    // Apply filters
-    applyFiltersBtn.addEventListener('click', () => {
-        const filters = {
-            // price_range: {
-            //     min: parseInt(minPriceInput.value),
-            //     max: parseInt(maxPriceInput.value)
-            // },
-            // categories: Array.from(document.querySelectorAll('.category-options input:checked')).map(input => input.value),
-            // status: document.querySelector('.status-options input:checked').value
-        };
-
-        const query = searchInput.value.trim();
-        if (query) {
-            searchProducts(query, filters);
-        }
-    });
-
-
     function showLoading() {
-        console.log("salaaaaam");
         loadingSpinner.style.display = 'block';
         productsGrid.innerHTML = '';
     }
@@ -88,11 +16,12 @@ document.addEventListener('DOMContentLoaded', function () {
         loadingSpinner.style.display = 'none';
     }
 
-    async function searchProducts(query, filters = {}) {
-        console.log("salaaaaam");
+    async function searchProducts(query) {
         showLoading();
         try {
-            const response = await fetch(`http://localhost:8000/api/search?query=${encodeURIComponent(query)}&filters=${encodeURIComponent(JSON.stringify(filters))}`);
+
+            
+            const response = await fetch(`http://localhost:8000/api/search?query=${encodeURIComponent(query)}`);
             const data = await response.json();
             displayProducts(data);
         } catch (error) {
@@ -175,16 +104,16 @@ ${product.colors.map(color => `
 
         if (product.link) {
             details += `
-    <a href="${product.link}" target="_blank" style="
-    display: inline-block;
-    margin-top: 20px;
-    padding: 10px 20px;
-    background: #007bff;
-    color: white;
-    text-decoration: none;
-    border-radius: 5px;
-    ">View on Store</a>
-    `;
+<a href="${product.link}" target="_blank" style="
+display: inline-block;
+margin-top: 20px;
+padding: 10px 20px;
+background: #007bff;
+color: white;
+text-decoration: none;
+border-radius: 5px;
+">View on Store</a>
+`;
         }
 
         modalDetails.innerHTML = details;
@@ -202,18 +131,9 @@ ${product.colors.map(color => `
     });
 
     searchButton.addEventListener('click', () => {
-        // const filters = {
-        //     price_range: {
-        //         min: parseInt(minPriceInput.value),
-        //         max: parseInt(maxPriceInput.value)
-        //     },
-        //     categories: Array.from(document.querySelectorAll('.category-options input:checked')).map(input => input.value),
-        //     status: document.querySelector('.status-options input:checked').value
-        // };
-
         const query = searchInput.value.trim();
         if (query) {
-            searchProducts(query);//, filters);
+            searchProducts(query);
         }
     });
 

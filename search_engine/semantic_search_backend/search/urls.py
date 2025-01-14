@@ -9,4 +9,5 @@ urlpatterns = [
     
     # API URLs - will match both with and without trailing slash
     re_path(r'^api/search/?$', SearchView.as_view(), name='search_api'),
+
 ]

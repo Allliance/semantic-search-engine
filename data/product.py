@@ -4,6 +4,7 @@ from PIL import Image
 import requests # type: ignore
 from io import BytesIO
 import loggers
+from collections import defaultdict
 
 # Get the logger for the search app
 
@@ -37,8 +38,10 @@ def load_products_data(file_path):
             products_data = [{k: v for k, v in p.items() if v is not None} for p in products_data]
         
         return products_data
-        
-        
+
+# To be caches enums
+ENUMS = ['category_name', 'shop_name', 'region', 'currency']
+ 
 class ProductManager:
     def __init__(self,
                  products_file,
@@ -60,6 +63,16 @@ class ProductManager:
         
         print("Products loaded successfully")
         print("Failed products: ", failed_products)
+        
+        # to be cached enums
+        enum_caches = defaultdict(set)
+        
+        for product in self.products.values():
+            for enum in ENUMS:
+                if enum in product.meta_data:
+                    enum_caches[f"all_{enum}"].add(product.meta_data[enum])
+            
+        self.enum_caches = enum_caches
     
     def add_product(self, product=None, product_dict=None):
         assert product or product_dict, "Either product or product_dict must be provided"
@@ -78,6 +91,10 @@ class ProductManager:
             raise Exception(f"Product with id {new_product.id} already exists")
         
         self.products[product_dict['id']] = new_product
+        # update enum cache
+        for enum in ENUMS:
+            if enum in product_dict:
+                self.enum_caches[f"all_{enum}"].add(product_dict[enum])
      
     def get_all_products(self):
          return self.products.values()
