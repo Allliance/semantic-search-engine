@@ -1,127 +1,115 @@
 {% load static %}
 <!DOCTYPE html> 
 <html lang="en">
-
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Fashion Search</title>
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/noUiSlider/15.7.1/nouislider.min.css">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.4.1/semantic.min.css">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.4.1/semantic.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/noUiSlider/15.7.1/nouislider.min.js"></script>
-
-<link rel="stylesheet" href="{% static 'search/css/main.css?v=1' %}">
-<link rel="stylesheet" href="{% static 'search/css/filter.css?v=1' %}">
-
-
-</head>
-<body>
-    <div class="search-container">
-    <h1 class="search-title">The style finds you!</h1>
-    
-    <div class="search-box">
-    <div class="input-group">
-    <input type="text" class="search-input" placeholder="Search for clothes...">
-    <button class="search-button">
-    <i class="fas fa-search"></i>
-    </button>
-    </div>
-    <button class="filter-toggle" id="filter-button">
-    <i class="fas fa-filter"></i>
-    <span>Filters</span>
-    </button>
-    </div>
-    
-    <div class="filter-panel">
-    <div class="filter-content">
-    <h3>Filters</h3>
-    
-    <!-- Price Range -->
-    <div class="filter-section">
-    <div class="filter-title">Price Range</div>
-    <div class="price-inputs">
-    <input type="number" id="minPrice" placeholder="Min" min="0">
-    <span>-</span>
-    <input type="number" id="maxPrice" placeholder="Max" min="0">
-    <select id="currency" class="currency-select">
-    <option value="">Select currency</option>
-    {% for currency in currencies %}
-    <option value="{{ currency }}">{{ currency }}</option>
-    {% endfor %}
-    </select>
-    </div>
-    </div>
-    
-    <!-- Regions -->
-    <div class="filter-section">
-    <div class="filter-title">Region</div>
-    <select id="region" class="region-select">
-    <option value="">Select region</option>
-    {% for region in regions %}
-    <option value="{{ region }}">{{ region }}</option>
-    {% endfor %}
-    </select>
-    </div>
-    
-    <!-- Categories -->
-    <div class="filter-section">
-        <div class="filter-title">Categories</div>
-        <select name="categories" multiple="" class="ui fluid dropdown search" id="categories-dropdown">
-            <option value="">Select categories</option>
-            {% for category in categories %}
-                <option value="{{ category }}">{{ category }}</option>
-            {% endfor %}
-        </select>
-    </div>
-    
-    <!-- Shops -->
-    <div class="filter-section">
-    <div class="filter-title">Shops</div>
-    <div class="checkbox-grid">
-    {% for shop in shops %}
-    <label>
-    <input type="checkbox" name="shops" value="{{ shop }}">
-    {{ shop }}
-    </label>
-    {% endfor %}
-    </div>
-    </div>
-    
-    <!-- Status -->
-    <div class="filter-section">
-    <div class="filter-title">Status</div>
-    <div class="status-options">
-    <label><input type="radio" name="status" value="" checked> All</label>
-    <label><input type="radio" name="status" value="IN_STOCK"> In Stock</label>
-    <label><input type="radio" name="status" value="OUT_OF_STOCK"> Out of Stock</label>
-    </div>
-    </div>
-    
-    <!-- Apply Filters Button -->
-    <button class="apply-filters">Apply Filters</button>
-    </div>
-    </div>
-    
-    <div class="loading-spinner"></div>
-    <div class="products-grid"></div>
-    </div>
-    
-    <div class="modal">
-    <div class="modal-content animate__animated animate__fadeIn">
-    <span class="close-modal">&times;</span>
-    <div class="modal-grid">
-    <div class="modal-images"></div>
-    <div class="modal-details"></div>
-    </div>
-    </div>
-    </div>
-
-<script src="{% static 'search/js/filter.js' %}"></script>
-
-<script src="{% static 'search/js/products.js' %}"></script>
-</body>
+   <head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>Fashion Search</title>
+      <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+      <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
+      <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/noUiSlider/15.7.1/nouislider.min.css">
+      <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.4.1/semantic.min.css">
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.4.1/semantic.min.js"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/noUiSlider/15.7.1/nouislider.min.js"></script>
+      <link rel="stylesheet" href="{% static 'search/css/main.css?v=1' %}">
+      <link rel="stylesheet" href="{% static 'search/css/filter.css?v=1' %}">
+      <link rel="stylesheet" href="{% static 'search/css/errors.css?v=1' %}">
+   </head>
+   <body>
+      <div class="search-container">
+         <h1 class="search-title">The style finds you!</h1>
+         <div class="search-box">
+            <div class="input-group">
+               <input type="text" class="search-input" placeholder="Search for clothes...">
+               <button class="search-button">
+               <i class="fas fa-search"></i>
+               </button>
+            </div>
+            <button class="filter-toggle" id="filter-button">
+            <i class="fas fa-filter"></i>
+            <span>Filters</span>
+            </button>
+         </div>
+         <div class="filter-panel">
+            <div class="filter-content">
+               <h3>Filters</h3>
+               <!-- Price Range -->
+               <div class="filter-section">
+                  <div class="filter-title">Price Range</div>
+                  <div class="price-inputs">
+                     <input type="number" id="minPrice" placeholder="Min" min="0">
+                     <span>-</span>
+                     <input type="number" id="maxPrice" placeholder="Max" min="0">
+                     <select id="currency" class="currency-select">
+                        <option value="">Select currency</option>
+                        {% for currency in currencies %}
+                        <option value="{{ currency }}">{{ currency }}</option>
+                        {% endfor %}
+                     </select>
+                  </div>
+               </div>
+               <!-- Regions -->
+               <div class="filter-section">
+                  <div class="filter-title">Region</div>
+                  <select id="region" class="region-select">
+                     <option value="">Select region</option>
+                     {% for region in regions %}
+                     <option value="{{ region }}">{{ region }}</option>
+                     {% endfor %}
+                  </select>
+               </div>
+               <!-- Categories -->
+               <div class="filter-section">
+                  <div class="filter-title">Categories</div>
+                  <select name="categories" multiple="" class="ui fluid dropdown search" id="categories-dropdown">
+                     <option value="">Select categories</option>
+                     {% for category in categories %}
+                     <option value="{{ category }}">{{ category }}</option>
+                     {% endfor %}
+                  </select>
+               </div>
+               <!-- Shops -->
+               <div class="filter-section">
+                  <div class="filter-title">Shops</div>
+                  <div class="checkbox-grid">
+                     {% for shop in shops %}
+                     <label>
+                     <input type="checkbox" name="shops" value="{{ shop }}">
+                     {{ shop }}
+                     </label>
+                     {% endfor %}
+                  </div>
+               </div>
+               <!-- Status -->
+               <div class="filter-section">
+                  <div class="filter-title">Status</div>
+                  <div class="status-options">
+                     <label><input type="radio" name="status" value="" checked> All</label>
+                     <label><input type="radio" name="status" value="IN_STOCK"> In Stock</label>
+                     <label><input type="radio" name="status" value="OUT_OF_STOCK"> Out of Stock</label>
+                  </div>
+               </div>
+               <!-- Apply Filters Button -->
+               <button class="apply-filters">Apply Filters</button>
+            </div>
+         </div>
+         <div class="error-container"><div class="error-messages animate__animated animate__fadeIn">
+            <!-- Error messages will be inserted here dynamically -->
+            </div>
+         <div class="loading-spinner"></div>
+         <div class="products-grid"></div>
+      </div>
+      <div class="modal">
+         <div class="modal-content animate__animated animate__fadeIn">
+            <span class="close-modal">&times;</span>
+            <div class="modal-grid">
+               <div class="modal-images"></div>
+               <div class="modal-details"></div>
+            </div>
+         </div>
+      </div>
+      <script src="{% static 'search/js/products.js' %}"></script>
+      <script src="{% static 'search/js/filter.js' %}"></script>
+   </body>
 </html>

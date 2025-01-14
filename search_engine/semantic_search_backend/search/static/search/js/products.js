@@ -1,3 +1,103 @@
+class ErrorHandler {
+    constructor() {
+        this.errorContainer = document.querySelector('.error-container');
+        this.errorMessages = document.querySelector('.error-messages');
+    }
+
+    showErrors(errors) {
+        // Clear existing errors
+        this.clearErrors();
+
+        // Create and show new error messages
+        Object.entries(errors).forEach(([field, messages]) => {
+            const errorMessage = this.createErrorMessage(field, messages);
+            this.errorMessages.appendChild(errorMessage);
+            
+            // Highlight related input field
+            this.highlightField(field);
+        });
+
+        // Show error container with animation
+        this.errorContainer.style.display = 'block';
+        this.errorMessages.classList.add('animate__fadeIn');
+
+        // Auto-hide errors after 5 seconds
+        setTimeout(() => this.clearErrors(), 5000);
+    }
+
+    createErrorMessage(field, messages) {
+        const messageDiv = document.createElement('div');
+        messageDiv.className = 'error-message';
+
+        const content = document.createElement('div');
+        content.className = 'error-content';
+
+        const fieldName = document.createElement('div');
+        fieldName.className = 'error-field';
+        fieldName.textContent = field.replace(/_/g, ' ');
+
+        const messageText = document.createElement('div');
+        messageText.className = 'error-text';
+        messageText.textContent = Array.isArray(messages) ? messages[0] : messages;
+
+        content.appendChild(fieldName);
+        content.appendChild(messageText);
+
+        const closeButton = document.createElement('span');
+        closeButton.className = 'error-close';
+        closeButton.innerHTML = '&times;';
+        closeButton.onclick = () => messageDiv.remove();
+
+        messageDiv.appendChild(content);
+        messageDiv.appendChild(closeButton);
+
+        return messageDiv;
+    }
+
+    highlightField(field) {
+        // Map error fields to input elements
+        const fieldMap = {
+            'category_name': '.category-options input:checked',
+            'currency': '#currency',
+            'min_current_price': '#minPrice',
+            'max_current_price': '#maxPrice'
+        };
+
+        const selector = fieldMap[field];
+        if (selector) {
+            const element = document.querySelector(selector);
+            if (element) {
+                element.classList.add('input-error');
+                
+                // Create tooltip if doesn't exist
+                if (!element.nextElementSibling?.classList.contains('error-tooltip')) {
+                    const tooltip = document.createElement('div');
+                    tooltip.className = 'error-tooltip';
+                    element.parentNode.insertBefore(tooltip, element.nextSibling);
+                }
+            }
+        }
+    }
+
+    clearErrors() {
+        // Clear error messages
+        this.errorMessages.innerHTML = '';
+        
+        // Remove error highlights
+        document.querySelectorAll('.input-error').forEach(element => {
+            element.classList.remove('input-error');
+        });
+        
+        // Remove tooltips
+        document.querySelectorAll('.error-tooltip').forEach(tooltip => {
+            tooltip.remove();
+        });
+    }
+}
+
+// Initialize error handler
+const errorHandler = new ErrorHandler();
+
 document.addEventListener('DOMContentLoaded', function() {
     const searchContainer = document.querySelector('.search-container');
     const searchInput = document.querySelector('.search-input');
@@ -16,20 +116,100 @@ document.addEventListener('DOMContentLoaded', function() {
         loadingSpinner.style.display = 'none';
     }
 
-    async function searchProducts(query) {
-        showLoading();
-        try {
+    // async function fetchProducts(query, filter={}) {
+    //     showLoading();
+    //     try {
+    //         const response = await fetch(`http://localhost:8000/api/search?query=${encodeURIComponent(query)}`);
+    //         const data = await response.json();
+    //         displayProducts(data);
+    //     } catch (error) {
+    //         console.error('Error fetching products:', error);
+    //         productsGrid.innerHTML = '<p>Error loading products. Please try again.</p>';
+    //     }
+    //     hideLoading();
+    // }
 
+    async function fetchProducts() {
+        showLoading();
+
+        const filters = {
+            currency: document.getElementById('currency').value,
+            priceRange: {
+                min: parseInt(document.getElementById('minPrice').value) || null,
+                max: parseInt(document.getElementById('maxPrice').value) || null
+            },
+            category_name: $('#categories-dropdown').dropdown('get values').join(','), // For Semantic UI dropdown
+            status: document.querySelector('input[name="status"]:checked').value,
+            region: document.getElementById('region')?.value,
+            shop_name: document.querySelector('select[name="shop"]')?.value
+        };
+    
+        // Get the current search query
+        const query = document.querySelector('.search-input').value;
+
+        try {
+            // Build query parameters
+            const params = new URLSearchParams({
+                query: query || ''
+            });
+    
+            // Add filter parameters if they exist
+            if (filters.category_name) {
+                params.append('category_name', filters.category_name);
+            }
             
-            const response = await fetch(`http://localhost:8000/api/search?query=${encodeURIComponent(query)}`);
+            if (filters.currency) {
+                params.append('currency', filters.currency);
+            }
+            
+            if (filters.priceRange?.min) {
+                params.append('min_current_price', filters.priceRange.min);
+            }
+            
+            if (filters.priceRange?.max) {
+                params.append('max_current_price', filters.priceRange.max);
+            }
+            
+            if (filters.update_date) {
+                params.append('update_date', filters.update_date);
+            }
+            
+            if (filters.shop_name) {
+                params.append('shop_name', filters.shop_name);
+            }
+            
+            if (filters.status && filters.status !== '') {
+                params.append('status', filters.status);
+            }
+            
+            if (filters.region) {
+                params.append('region', filters.region);
+            }
+            
+            if (filters.off_percent) {
+                params.append('off_percent', filters.off_percent);
+            }
+    
+            const response = await fetch(`http://localhost:8000/api/search?${params.toString()}`);
+            
             const data = await response.json();
+            if (!response.ok) {
+                errorHandler.showErrors(data);
+                return;
+            }
+            
             displayProducts(data);
         } catch (error) {
-            console.error('Error fetching products:', error);
-            productsGrid.innerHTML = '<p>Error loading products. Please try again.</p>';
+            console.log(error);
+            errorHandler.showErrors({
+                'general': ['An unexpected error occurred. Please try again.']
+            });
+        } finally {
+            hideLoading();
         }
-        hideLoading();
     }
+
+    window.fetchProducts = fetchProducts;
 
     function displayProducts(products) {
         searchContainer.classList.add('results-shown');
@@ -133,7 +313,7 @@ border-radius: 5px;
     searchButton.addEventListener('click', () => {
         const query = searchInput.value.trim();
         if (query) {
-            searchProducts(query);
+            fetchProducts();
         }
     });
 
@@ -141,7 +321,7 @@ border-radius: 5px;
         if (e.key === 'Enter') {
             const query = searchInput.value.trim();
             if (query) {
-                searchProducts(query);
+                fetchProducts();
             }
         }
     });

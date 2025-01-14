@@ -101,29 +101,12 @@ document.addEventListener('DOMContentLoaded', function() {
     // Handle apply filters
     const applyFiltersButton = document.querySelector('.apply-filters');
     applyFiltersButton.addEventListener('click', function() {
-    // Collect filter values
-    const filters = {
-    priceRange: {
-    min: parseInt(document.getElementById('minPrice').value) || null,
-    max: parseInt(document.getElementById('maxPrice').value) || null
-    },
-    currency: document.getElementById('currency').value,
-    region: document.getElementById('region').value,
-    categories: Array.from(document.querySelectorAll('input[name="categories"]:checked'))
-    .map(input => input.value),
-    shops: Array.from(document.querySelectorAll('input[name="shops"]:checked'))
-    .map(input => input.value),
-    status: document.querySelector('input[name="status"]:checked').value
-    };
-    
-    // Send filters to server
-    // applyFilters(filters);
-    
+    window.fetchProducts();
     // Close filter panel
-    filterPanel.classList.remove('open');
-    productsGrid.classList.remove('shifted');
-    isFilterPanelOpen = false;
-    filterToggle.querySelector('i').style.transform = 'rotate(0deg)';
+    // filterPanel.classList.remove('open');
+    // productsGrid.classList.remove('shifted');
+    // isFilterPanelOpen = false;
+    // filterToggle.querySelector('i').style.transform = 'rotate(0deg)';
     });
     
     // async function applyFilters(filters) {

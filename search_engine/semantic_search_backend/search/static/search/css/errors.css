@@ -1,0 +1,93 @@
+.error-container {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 1000;
+    max-width: 400px;
+    width: 100%;
+}
+
+.error-messages {
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+}
+
+.error-message {
+    padding: 15px 20px;
+    border-left: 4px solid #ff4444;
+    margin-bottom: 1px;
+    background: white;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    animation: slideIn 0.3s ease-out;
+}
+
+.error-message:last-child {
+    margin-bottom: 0;
+}
+
+.error-field {
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 5px;
+    text-transform: capitalize;
+}
+
+.error-text {
+    color: #666;
+    font-size: 14px;
+}
+
+.error-content {
+    flex: 1;
+}
+
+.error-close {
+    color: #999;
+    cursor: pointer;
+    font-size: 18px;
+    padding: 0 5px;
+    margin-left: 10px;
+}
+
+.error-close:hover {
+    color: #666;
+}
+
+@keyframes slideIn {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+/* Field-specific error indicators */
+.input-error {
+    border-color: #ff4444 !important;
+    background-color: #fff8f8;
+}
+
+.error-tooltip {
+    position: absolute;
+    background: #ff4444;
+    color: white;
+    padding: 5px 10px;
+    border-radius: 4px;
+    font-size: 12px;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    white-space: nowrap;
+    display: none;
+}
+
+.input-error:hover + .error-tooltip {
+    display: block;
+}
