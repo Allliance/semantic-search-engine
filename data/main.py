@@ -115,8 +115,11 @@ def index_product_endpoint():
         if not product_data:
             return jsonify({"error": "No product data provided"}), 400
         
-        new_product = Product(product_data)
-        
+        try:
+            new_product = Product(product_data)
+        except Exception as e:
+            raise Exception(f"Invalid product data. Reason: {str(e)}")
+            
         if product_manager.product_exists(new_product.id) and product_manager.products[new_product.id].recently_indexed:
             return jsonify({"error": f"Product with id {new_product.id} already exists"}), 400
         
@@ -130,6 +133,45 @@ def index_product_endpoint():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
+
+VALID_STATUSES = ['IN_STOCK', 'OUT_OF_STOCK']
+
+@app.route('/categories', methods=['GET'])
+def get_categories():
+    global product_manager
+    categories = set()
+    for product in product_manager.get_all_products():
+        if 'category_name' in product.meta_data:
+            categories.add(product.meta_data['category_name'])
+    return jsonify({"categories": list(categories)}), 200
+
+@app.route('/currencies', methods=['GET'])
+def get_currencies():
+    global product_manager
+    currencies = set()
+    for product in product_manager.get_all_products():
+        if 'currency' in product.meta_data:
+            currencies.add(product.meta_data['currency'])
+    return jsonify({"currencies": list(currencies)}), 200
+
+@app.route('/shops', methods=['GET'])
+def get_shops():
+    global product_manager
+    shops = set()
+    for product in product_manager.get_all_products():
+        if 'shop_name' in product.meta_data:
+            shops.add(product.meta_data['shop_name'])
+    return jsonify({"shops": list(shops)}), 200
+
+@app.route('/regions', methods=['GET'])
+def get_regions():
+    global product_manager
+    regions = set()
+    for product in product_manager.get_all_products():
+        if 'region' in product.meta_data:
+            regions.add(product.meta_data['region'])
+    return jsonify({"regions": list(regions)}), 200
+
 @app.route('/query', methods=['POST'])
 def query_endpoint():
     global index, encoder, product_manager
@@ -137,19 +179,26 @@ def query_endpoint():
     try:
         data = request.get_json()
         query_text = data.get('query')
+        filters = data.get('filters', {})
         
         if not query_text:
             return jsonify({"error": "Query text is required"}), 400
+            
         try:
             query_embedding = encoder.encode_text(query_text)
-            top_image_ids = index.query(query_embedding)
+            # Pass filters to the query method
+            top_image_ids = index.query(query_embedding, filters)
             top_ids = [int(image_id.split('#')[0]) for image_id in top_image_ids]
             ranked_ids = rank_products(top_ids)
             
-            response = [p.meta_data for p in product_manager.get_products_by_id(ranked_ids)]
+            response = []
+            for product in product_manager.get_products_by_id(ranked_ids):
+                response.append(product.meta_data)
+            
         except Exception as e:
             print("An exception occurred while querying the index")
             print(str(e))
+            raise
         
         return jsonify({"results": response}), 200
     except Exception as e:

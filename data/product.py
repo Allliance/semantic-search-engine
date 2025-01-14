@@ -3,14 +3,17 @@ import os
 from PIL import Image
 import requests # type: ignore
 from io import BytesIO
+import loggers
 
+# Get the logger for the search app
+
+MANDATORY_FILEDS = ['id', 'images']
 
 class Product:
     def __init__(self, product_dict):
         self.id = product_dict['id']
-        self.name = product_dict['name']
-        self.description = product_dict['description']
         self.image_urls = product_dict['images']
+        
         self.meta_data = product_dict
         self.recently_indexed = False
         
@@ -28,31 +31,56 @@ class Product:
     def to_dict(self):
         return self.meta_data
 
-
-class ProductManager:
-    def __init__(self, products_file):
-        self.products_file = products_file
-        self.products = self.load_products()
-    
-    def add_product(self, product=None, product_dict=None):
-        assert product or product_dict, "Either product or product_dict must be provided"
-        if product_dict is None:
-            product_dict = product.meta_data
-            
-        if product_dict['id'] in self.products:
-            raise Exception(f"Product with id {product.id} already exists")
-        
-        self.products[product_dict['id']] = Product(product_dict)
-     
-    def get_all_products(self):
-         return self.products.values()
-     
-    def load_products(self):
-        with open(self.products_file, 'r', encoding='utf-8') as f:
+def load_products_data(file_path):
+        with open(file_path, 'r', encoding='utf-8') as f:
             products_data = json.load(f)
             products_data = [{k: v for k, v in p.items() if v is not None} for p in products_data]
         
-        return {p['id']: Product(p) for p in products_data}
+        return products_data
+        
+        
+class ProductManager:
+    def __init__(self,
+                 products_file,
+                 verbose_error=True):
+        logger = loggers.get_product_manager_logger()
+        self.products_file = products_file
+        self.products = {}
+        
+        failed_products = 0
+        products_data = load_products_data(products_file)
+        
+        for product_data in products_data:
+            try:
+                self.add_product(product_dict=product_data)
+            except Exception as e:
+                failed_products += 1
+                if verbose_error:
+                    logger.info(f"Failed to load product {product_data.get('id')}: {str(e)}")
+        
+        print("Products loaded successfully")
+        print("Failed products: ", failed_products)
+    
+    def add_product(self, product=None, product_dict=None):
+        assert product or product_dict, "Either product or product_dict must be provided"
+        
+        
+        if product_dict is None:
+            product_dict = product.meta_data
+        
+        try:
+            new_product = Product(product_dict)
+        except Exception as e:
+            raise Exception(f"Invalid product data. Reason: {str(e)}")
+        
+            
+        if new_product.id in self.products:
+            raise Exception(f"Product with id {new_product.id} already exists")
+        
+        self.products[product_dict['id']] = new_product
+     
+    def get_all_products(self):
+         return self.products.values()
     
     def get_products_by_id(self, products_id):
         if not isinstance(products_id, list):

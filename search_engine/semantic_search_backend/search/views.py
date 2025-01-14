@@ -11,6 +11,18 @@ from .validators import FilterValidator
 from rest_framework.exceptions import ValidationError
 from typing import Dict, Any, List
 
+class SearchPageView(TemplateView):
+    template_name = 'search/page.html'
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        # Add any initial context data needed for the template
+        context['initial_data'] = {
+            'query': '',
+            'filters': {}
+        }
+        return context
+
 class SearchView(APIView):
     def get(self, request):
         try:
@@ -69,7 +81,11 @@ class SearchView(APIView):
             )
         
             response.raise_for_status()
-            return Response(response.json())
+                
+            results = response.json()['results']
+            
+        
+            return Response(results)
             
         except ValidationError as e:
             return Response(
