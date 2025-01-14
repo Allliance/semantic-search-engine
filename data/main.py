@@ -139,16 +139,18 @@ VALID_STATUSES = ['IN_STOCK', 'OUT_OF_STOCK']
 @app.route('/enums', methods=['GET'])
 def get_enums():
     global product_manager
+
     categories = product_manager.enum_caches['all_category_name']
     currencies = product_manager.enum_caches['all_currency']
     shops = product_manager.enum_caches['all_shop_name']
     regions = product_manager.enum_caches['all_region']
     
+    
     return jsonify({
-        "categories": categories,
-        "currencies": currencies,
-        "shops": shops,
-        "regions": regions
+        "categories": list(categories),
+        "currencies": list(currencies),
+        "shops": list(shops),
+        "regions": list(regions)
     }), 200
 
 @app.route('/query', methods=['POST'])

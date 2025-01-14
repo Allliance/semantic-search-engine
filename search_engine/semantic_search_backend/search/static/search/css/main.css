@@ -25,12 +25,12 @@ height: auto;
 padding-top: 50px;
 }
 
-.search-box {
+/* .search-box {
 width: 80%;
 max-width: 600px;
 position: relative;
 margin-bottom: 40px;
-}
+} */
 
 .search-input {
 width: 100%;
@@ -381,12 +381,12 @@ grid-template-columns: repeat(2, 1fr);
 }
 
 /* Update search box to accommodate filter button */
-.search-box {
+/* .search-box {
     display: flex;
     flex-direction: column;
     gap: 15px;
     align-items: center;
-}
+} */
 
 .input-group {
     width: 100%;
@@ -410,4 +410,34 @@ grid-template-columns: repeat(2, 1fr);
 
 .search-button:hover {
     background: #0056b3;
+}
+
+
+.ui.dropdown {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+}
+
+.ui.dropdown .menu {
+    max-height: 200px;
+    overflow-y: auto;
+}
+
+.ui.dropdown .menu > .item {
+    padding: 8px 12px !important;
+}
+
+.ui.dropdown .delete.icon {
+    color: #999;
+}
+
+.ui.dropdown .text {
+    line-height: 1.2;
+}
+
+.ui.multiple.dropdown > .label {
+    margin: 2px 4px;
+    padding: 4px 8px;
 }

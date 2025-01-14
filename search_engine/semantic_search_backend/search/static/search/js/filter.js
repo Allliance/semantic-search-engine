@@ -75,6 +75,14 @@
 // });
 
 document.addEventListener('DOMContentLoaded', function() {
+
+    $('#categories-dropdown').dropdown({
+        allowAdditions: false,
+        clearable: true,
+        placeholder: 'Select categories...',
+        transition: 'fade down'
+    });
+
     const filterToggle = document.querySelector('.filter-toggle');
     const filterPanel = document.querySelector('.filter-panel');
     const productsGrid = document.querySelector('.products-grid');
@@ -109,7 +117,7 @@ document.addEventListener('DOMContentLoaded', function() {
     };
     
     // Send filters to server
-    applyFilters(filters);
+    // applyFilters(filters);
     
     // Close filter panel
     filterPanel.classList.remove('open');
@@ -118,25 +126,25 @@ document.addEventListener('DOMContentLoaded', function() {
     filterToggle.querySelector('i').style.transform = 'rotate(0deg)';
     });
     
-    async function applyFilters(filters) {
-    try {
-    const response = await fetch('/api/filter-products', {
-    method: 'POST',
-    headers: {
-    'Content-Type': 'application/json',
-    'X-CSRFToken': '{{ csrf_token }}'
-    },
-    body: JSON.stringify(filters)
-    });
+    // async function applyFilters(filters) {
+    // try {
+    // const response = await fetch('/api/filter-products', {
+    // method: 'POST',
+    // headers: {
+    // 'Content-Type': 'application/json',
+    // 'X-CSRFToken': '{{ csrf_token }}'
+    // },
+    // body: JSON.stringify(filters)
+    // });
     
-    if (!response.ok) throw new Error('Failed to apply filters');
+    // if (!response.ok) throw new Error('Failed to apply filters');
     
-    const data = await response.json();
-    updateProductsGrid(data.products);
-    } catch (error) {
-    console.error('Error applying filters:', error);
-    }
-    }
+    // const data = await response.json();
+    // updateProductsGrid(data.products);
+    // } catch (error) {
+    // console.error('Error applying filters:', error);
+    // }
+    // }
     
     function updateProductsGrid(products) {
     // Implementation of updating the products grid

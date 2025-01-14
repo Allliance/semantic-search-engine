@@ -11,37 +11,17 @@ from .validators import FilterValidator
 from rest_framework.exceptions import ValidationError
 from typing import Dict, Any, List
 
-def get_valid_categories() -> List[str]:
-        # Implement fetching categories from backend
-        response = requests.get(f"{settings.DATA_SERVICE_URL}/categories")
-        response.raise_for_status()
-        return response.json()['categories']
-
-def get_valid_currencies() -> List[str]:
-    # Implement fetching currencies from backend
-    response = requests.get(f"{settings.DATA_SERVICE_URL}/currencies")
+def get_enums() -> Dict[str, List[str]]:
+    # Implement fetching enums from backend
+    response = requests.get(f"{settings.DATA_SERVICE_URL}/enums")
     response.raise_for_status()
-    return response.json()['currencies']
-
-def get_valid_shops() -> List[str]:
-    # Implement fetching shops from backend
-    response = requests.get(f"{settings.DATA_SERVICE_URL}/shops")
-    response.raise_for_status()
-    return response.json()['shops']
-
-def get_valid_regions() -> List[str]:
-    # Implement fetching regions from backend
-    response = requests.get(f"{settings.DATA_SERVICE_URL}/regions")
-    response.raise_for_status()
-    return response.json()['regions']
+    return response.json()
 
 class SearchPageView(TemplateView):
     template_name = 'search/page.html'
     
     def get_context_data(self, **kwargs):
-        response = requests.get(f"{settings.DATA_SERVICE_URL}/enums")
-        response.raise_for_status()
-        enums = response.json()
+        enums = get_enums()
         context = super().get_context_data(**kwargs)
         context.update({
         'categories': enums.get('categories'),
@@ -146,10 +126,13 @@ class SearchView(APIView):
         errors = {}
 
         # Get valid options from backend
-        valid_categories = get_valid_categories()
-        valid_currencies = get_valid_currencies()
-        valid_shops = get_valid_shops()
-        valid_regions = get_valid_regions()
+        
+        
+        enums = get_enums()
+        valid_categories = enums.get('categories')
+        valid_currencies = enums.get('currencies')
+        valid_shops = enums.get('shops')
+        valid_regions = enums.get('regions')
 
         if category_name := validated_data.get('category_name'):
             try:

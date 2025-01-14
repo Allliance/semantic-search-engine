@@ -1,0 +1,115 @@
+.search-box {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 20px;
+    }
+    
+    .filter-button {
+    background: #4CAF50;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.3s ease;
+    }
+    
+    .filter-button:hover {
+    background: #45a049;
+    }
+    
+    .filter-button i {
+    font-size: 16px;
+    }
+    
+    .filter-panel {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.5s ease-in-out;
+    background: #f9f9f9;
+    border-radius: 10px;
+    margin: 0 auto;
+    width: 90%;
+    max-width: 800px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+    
+    .filter-panel.open {
+    max-height: 800px;
+    margin-bottom: 20px;
+    }
+    
+    .filter-content {
+    padding: 20px;
+    }
+    
+    .filter-section {
+    margin-bottom: 20px;
+    }
+    
+    .filter-section h4 {
+    color: #333;
+    margin-bottom: 10px;
+    font-size: 16px;
+    }
+    
+    .price-range-container {
+    padding: 10px;
+    }
+    
+    .price-inputs {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    margin-top: 10px;
+    }
+    
+    .price-inputs input {
+    width: 100px;
+    padding: 5px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    }
+    
+    .category-options, .status-options {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 10px;
+    }
+    
+    .category-options label, .status-options label {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    cursor: pointer;
+    }
+    
+    .apply-filters {
+    background: #4CAF50;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+    width: 100%;
+    margin-top: 20px;
+    transition: background 0.3s ease;
+    }
+    
+    .apply-filters:hover {
+    background: #45a049;
+    }
+    
+    /* Animation for content shift */
+    .products-grid {
+    transition: transform 0.5s ease-in-out;
+    }
+    
+    .products-grid.shifted {
+    transform: translateY(20px);
+    }
