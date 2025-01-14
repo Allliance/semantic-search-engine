@@ -16,16 +16,14 @@ Including another URLconf
 """
 
 from django.urls import path, include, re_path
-from django.views.generic import TemplateView
 from django.views.static import serve
 from django.conf import settings
+from django.views.generic import RedirectView
 
 urlpatterns = [
-    path('api/', include('search.urls')),  # Your API endpoints
+    path('', include('search.urls')),  # Your API endpoints
+    path('', RedirectView.as_view(url='/search/', permanent=True)),
     
-    # Serve static files
-    re_path(r'^static/(?P<path>.*)$', serve, {'document_root': settings.STATIC_ROOT}),
-    
-    # # Serve frontend - this should be last to catch all other URLs
-    # re_path(r'^.*', TemplateView.as_view(template_name='index.html')),
+    # Catch all unmatched URLs and redirect to /search
+    re_path(r'^.*$', RedirectView.as_view(url='/search/', permanent=False)),
 ]

@@ -17,13 +17,13 @@ class Index:
         
         return response['vectors']
     
-    def query(self, query_embedding):
+    def query(self, query_embedding, filters=None):
 
         index = self.pc.Index(self.index_name)
 
         response = index.query(
             vector=query_embedding.tolist(),
-            top_k=20,
+            top_k=30,
             include_values=True,
             # include_metadata=True,
             # filter={"genre": {"$eq": "action"}}
