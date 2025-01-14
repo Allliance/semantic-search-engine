@@ -261,3 +261,186 @@ grid-template-columns: repeat(2, 1fr);
         transform: translateY(0);
     }
 }
+
+.filter-panel {
+    position: fixed;
+    right: -320px;
+    top: 0;
+    width: 320px;
+    height: 100vh;
+    background: white;
+    box-shadow: -5px 0 15px rgba(0, 0, 0, 0.1);
+    transition: right 0.3s ease;
+    z-index: 1000;
+}
+
+.filter-panel.open {
+    right: 0;
+}
+
+.filter-toggle {
+    position: absolute;
+    left: -60px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: white;
+    border: none;
+    padding: 15px;
+    border-radius: 10px 0 0 10px;
+    box-shadow: -5px 0 15px rgba(0, 0, 0, 0.1);
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 5px;
+}
+
+.filter-toggle i {
+    font-size: 20px;
+    color: #333;
+}
+
+.filter-toggle span {
+    font-size: 12px;
+    color: #666;
+}
+
+.filter-content {
+    padding: 20px;
+    height: 100%;
+    overflow-y: auto;
+}
+
+.filter-content h3 {
+    margin-bottom: 20px;
+    padding-bottom: 10px;
+    border-bottom: 2px solid #f0f0f0;
+}
+
+.filter-section {
+    margin-bottom: 25px;
+}
+
+.filter-section h4 {
+    margin-bottom: 15px;
+    color: #333;
+}
+
+.price-range-container {
+    padding: 10px;
+}
+
+.category-options, .status-options {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.category-options label, .status-options label {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+}
+
+.apply-filters {
+    width: 100%;
+    padding: 12px;
+    background: #007bff;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background 0.3s ease;
+}
+
+.apply-filters:hover {
+    background: #0056b3;
+}
+
+/* noUiSlider Custom Styles */
+.noUi-connect {
+    background: #007bff;
+}
+
+.noUi-handle {
+    border: 1px solid #007bff;
+    background: white;
+    border-radius: 50%;
+}
+
+.noUi-handle:before,
+.noUi-handle:after {
+    display: none;
+}
+
+
+.range-slider {
+    position: relative;
+    width: 100%;
+    height: 40px;
+}
+
+.range-slider input[type="range"] {
+    position: absolute;
+    width: 100%;
+    height: 5px;
+    background: none;
+    pointer-events: none;
+    -webkit-appearance: none;
+}
+
+.range-slider input[type="range"]::-webkit-slider-thumb {
+    height: 20px;
+    width: 20px;
+    border-radius: 50%;
+    background: #007bff;
+    cursor: pointer;
+    pointer-events: auto;
+    -webkit-appearance: none;
+}
+
+.range-slider input[type="range"]::-moz-range-thumb {
+    height: 20px;
+    width: 20px;
+    border-radius: 50%;
+    background: #007bff;
+    cursor: pointer;
+    pointer-events: auto;
+}
+
+.range-slider input[type="range"]::-webkit-slider-runnable-track {
+    width: 100%;
+    height: 5px;
+    background: #ddd;
+    border-radius: 3px;
+}
+
+.range-slider input[type="range"]::-moz-range-track {
+    width: 100%;
+    height: 5px;
+    background: #ddd;
+    border-radius: 3px;
+}
+
+.range-slider input.min-price {
+    z-index: 1;
+}
+
+.range-slider input.max-price {
+    z-index: 2;
+}
+
+.price-inputs {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: 15px;
+}
+
+.price-inputs input {
+    width: 100px;
+    padding: 8px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+}

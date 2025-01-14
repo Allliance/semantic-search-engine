@@ -8,7 +8,10 @@
     <title>Fashion Search</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
-    <link rel="stylesheet" href="{% static 'search/css/style.css' %}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/noUiSlider/15.7.1/nouislider.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/noUiSlider/15.7.1/15.7.1/nouislider.min.js"></script>
+
+    <link rel="stylesheet" href="{% static 'search/css/style.css?v=1' %}">
 </head>
 
 <body>
@@ -20,9 +23,58 @@
                 <i class="fas fa-search"></i>
             </button>
         </div>
+
+        <div class="filter-panel"><button class="filter-toggle">
+            <i class="fas fa-filter"></i>
+            <span>Filters</span>
+            </button>
+            <div class="filter-content">
+            <h3>Filters</h3>
+            
+            <!-- Price Range -->
+            <div class="filter-section">
+                <h4>Price Range</h4>
+                <div class="price-range-container">
+                    <div class="range-slider">
+                        <input type="range" id="priceMin" min="0" max="1000" value="0" class="min-price">
+                        <input type="range" id="priceMax" min="0" max="1000" value="1000" class="max-price">
+                    </div>
+                    <div class="price-inputs">
+                        <input type="number" id="minPrice" placeholder="Min" value="0">
+                        <span>-</span>
+                        <input type="number" id="maxPrice" placeholder="Max" value="1000">
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Categories -->
+            <div class="filter-section">
+            <h4>Categories</h4>
+            <div class="category-options">
+            <label><input type="checkbox" value="shirts"> Shirts</label>
+            <label><input type="checkbox" value="pants"> Pants</label>
+            <label><input type="checkbox" value="dresses"> Dresses</label>
+            <label><input type="checkbox" value="shoes"> Shoes</label>
+            </div>
+            </div>
+            
+            <!-- Status -->
+            <div class="filter-section">
+            <h4>Status</h4>
+            <div class="status-options">
+            <label><input type="radio" name="status" value="" checked> All</label>
+            <label><input type="radio" name="status" value="IN_STOCK"> In Stock</label>
+            <label><input type="radio" name="status" value="OUT_OF_STOCK"> Out of Stock</label>
+            </div>
+            </div>
+            
+            <!-- Apply Filters Button -->
+            <button class="apply-filters">Apply Filters</button>
+        </div>
+
+    </div>
         <div class="loading-spinner"></div>
         <div class="products-grid"></div>
-    </div>
 
     <div class="modal">
         <div class="modal-content animate__animated animate__fadeIn">

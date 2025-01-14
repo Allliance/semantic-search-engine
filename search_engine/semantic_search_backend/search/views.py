@@ -134,7 +134,8 @@ class SearchView(APIView):
             FilterValidator.validate_shop(filters['shop_name'], valid_shops)
         
         if 'status' in filters:
-            FilterValidator.validate_status(filters['status'])
+            if filters['status']:
+                FilterValidator.validate_status(filters['status'])
         
         if 'region' in filters:
             FilterValidator.validate_region(filters['region'], valid_regions)
