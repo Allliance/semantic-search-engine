@@ -1,13 +1,19 @@
 from rest_framework import serializers
 
+class StringListField(serializers.ListField):
+    child = serializers.CharField()
+    
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+
 class SearchRequestSerializer(serializers.Serializer):
     query = serializers.CharField(required=True)
-    category_name = serializers.CharField(required=False, allow_null=True, allow_blank=True)
+    category_name = StringListField(required=False, allow_null=True)
     currency = serializers.CharField(required=False, allow_null=True, allow_blank=True)
     min_current_price = serializers.FloatField(required=False, allow_null=True, min_value=0)
     max_current_price = serializers.FloatField(required=False, allow_null=True, min_value=0)
     update_date = serializers.DateField(required=False, allow_null=True)
-    shop_name = serializers.CharField(required=False, allow_null=True, allow_blank=True)
+    shop_name = StringListField(required=False, allow_null=True)
     status = serializers.CharField(required=False, allow_null=True, allow_blank=True)
     region = serializers.CharField(required=False, allow_null=True, allow_blank=True)
     off_percent = serializers.FloatField(required=False, allow_null=True, min_value=0, max_value=100)

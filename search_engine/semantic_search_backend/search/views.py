@@ -51,7 +51,7 @@ class SearchView(APIView):
             # Create data dictionary for serializer
             data = {
                 'query': query,
-                'category_name': request.GET.get('category_name'),
+                'category_name': request.GET.get('category_name').split(","),
                 'currency': request.GET.get('currency'),
                 'min_current_price': request.GET.get('min_current_price'),
                 'max_current_price': request.GET.get('max_current_price'),
@@ -66,7 +66,6 @@ class SearchView(APIView):
             if data['min_current_price']:
                 data['min_current_price'] = float(data['min_current_price'])
             if data['max_current_price']:
-                print("niga")
                 data['max_current_price'] = float(data['max_current_price'])
             if data['off_percent']:
                 data['off_percent'] = float(data['off_percent'])
@@ -107,7 +106,6 @@ class SearchView(APIView):
             return Response(results)
             
         except ValidationError as e:
-            print(e.detail)
             return Response(
                 e.detail,
                 status=status.HTTP_400_BAD_REQUEST

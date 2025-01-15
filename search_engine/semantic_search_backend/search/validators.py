@@ -6,8 +6,8 @@ class FilterValidator:
     VALID_STATUSES = ['IN_STOCK', 'OUT_OF_STOCK']
     
     @staticmethod
-    def validate_category(category_name: str, valid_categories: List[str]) -> None:
-        if category_name not in valid_categories:
+    def validate_category(category_name: List[str], valid_categories: List[str]) -> None:
+        if set(category_name) - set(valid_categories):
             raise ValidationError({
                 'category_name': f'Invalid category. Must be one of: {", ".join(valid_categories)}'
             })

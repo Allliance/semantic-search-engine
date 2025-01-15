@@ -45,7 +45,7 @@ class Index:
             pinecone_filters["$and"].append({
                 "$and": [
                     {"category_name": {"$exists": True}},
-                    {"category_name": {"$eq": filters['category']}}
+                    {"category_name": {"$in": filters['category']}}
                 ]
             })
             
@@ -61,7 +61,6 @@ class Index:
                     "current_price": {"$gte": filters['price']['min']}
                 })
             if 'max' in filters['price']:
-                print('salam')
                 price_filter["$and"].append({
                     "current_price": {"$lte": filters['price']['max']}
                 })
@@ -80,7 +79,7 @@ class Index:
             pinecone_filters["$and"].append({
                 "$and": [
                     {"shop_name": {"$exists": True}},
-                    {"shop_name": {"$eq": filters['shop']}}
+                    {"shop_name": {"$in": filters['shop']}}
                 ]
             })
             
