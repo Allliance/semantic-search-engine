@@ -4,6 +4,9 @@ from dotenv import load_dotenv
 import os
 import matplotlib.pyplot as plt # type: ignore
 from collections import defaultdict
+import requests # type: ignore
+from io import BytesIO
+from PIL import Image
 
 def rank_products(product_ids):
     all_ids = set(product_ids)
@@ -42,3 +45,10 @@ def init_pinecone(index_name, dimension):
     return pc
 
     
+def fetch_image(image_url, verbose=False):
+    response = requests.get(image_url)
+        
+    if response.status_code == 200:
+        return Image.open(BytesIO(response.content))
+    elif verbose:
+        print(f"Failed to fetch image from {image_url}")
