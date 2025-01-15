@@ -18,6 +18,7 @@ class Index:
         return response['vectors']
     
     def query(self, query_embedding, filters=None):
+        print(filters)
         index = self.pc.Index(self.index_name)
         
         pinecone_filters = self._prepare_pinecone_filters(filters)
@@ -60,6 +61,7 @@ class Index:
                     "current_price": {"$gte": filters['price']['min']}
                 })
             if 'max' in filters['price']:
+                print('salam')
                 price_filter["$and"].append({
                     "current_price": {"$lte": filters['price']['max']}
                 })

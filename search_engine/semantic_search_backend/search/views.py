@@ -66,6 +66,7 @@ class SearchView(APIView):
             if data['min_current_price']:
                 data['min_current_price'] = float(data['min_current_price'])
             if data['max_current_price']:
+                print("niga")
                 data['max_current_price'] = float(data['max_current_price'])
             if data['off_percent']:
                 data['off_percent'] = float(data['off_percent'])
@@ -106,6 +107,7 @@ class SearchView(APIView):
             return Response(results)
             
         except ValidationError as e:
+            print(e.detail)
             return Response(
                 e.detail,
                 status=status.HTTP_400_BAD_REQUEST
@@ -180,13 +182,14 @@ class SearchView(APIView):
         if category_name := validated_data.get('category_name'):
             prepared_filters['category'] = category_name
         
-        if (validated_data.get('min_current_price') is not None or 
-            validated_data.get('max_current_price') is not None):
-            prepared_filters['price'] = {
-                'min': validated_data.get('min_current_price', 0),
-                'max': validated_data.get('max_current_price', float('inf')),
+        if validated_data.get('currency'):
+            prepared_filters['price']= {
                 'currency': validated_data['currency']
             }
+            if validated_data.get('min_current_price') is not None:
+                prepared_filters['price']['min'] = validated_data['min_current_price']
+            if validated_data.get('max_current_price') is not None:
+                prepared_filters['price']['max'] = validated_data['max_current_price']
         
         if update_date := validated_data.get('update_date'):
             prepared_filters['update_date'] = update_date
