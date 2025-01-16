@@ -5,7 +5,7 @@ from typing import Dict, List, Optional
 from pydantic import BaseModel
 import os
 from dotenv import load_dotenv
-
+from text_search_manager import TextSearchManager
 from models import init_db, get_db
 from database import init_database
 from product import Product
@@ -45,6 +45,8 @@ app.add_middleware(
 # Global variables
 index: Optional[Index] = None
 encoder: Optional[Encoder] = None
+product_manager: Optional[ProductManager] = None
+text_search_manager: Optional[TextSearchManager] = None
 
 # Pydantic models
 class QueryRequest(BaseModel):
@@ -63,12 +65,24 @@ def initialize_product_manager():
     db = next(get_db())
     product_manager = ProductManager(db, PRODUCTS_FILE)
 
+  
+def initialize_search_manager():
+    global text_search_manager, product_manager
+    
+    text_search_manager = TextSearchManager(
+        meilisearch_url="http://localhost:7700",
+        master_key="master_key",
+        index_name="products"
+    )
+    
+    text_search_manager.index_products(product_manager)
+
 def initialize_database():
         
     init_database()
     init_db()
     print("Database initialized")
-    
+  
 
 def initialize_service():
     global index, encoder
@@ -128,6 +142,7 @@ async def startup_event():
     initialize_database()
     initialize_service()
     initialize_product_manager()
+    initialize_search_manager()
 
 @app.get("/health")
 async def health_check():
@@ -138,6 +153,7 @@ async def index_product_endpoint(
     product_data: ProductData,
     db: Session = Depends(get_db)
 ):
+    global text_search_manager
     product_manager = ProductManager(db)
     
     try:
@@ -151,6 +167,7 @@ async def index_product_endpoint(
         
         result = index_single_product(new_product)
         product_manager.add_product(product=new_product)
+        text_search_manager.index_product(new_product)
         
         return result
     
@@ -164,6 +181,26 @@ async def get_enums(db: Session = Depends(get_db)):
     return {
         e[0]: product_manager.get_enum_values(e[1]) for e in TARGET_ENUMS
     }
+
+@app.post("/keyword_search")
+async def keyword_search(
+    query_request: QueryRequest,
+    db: Session = Depends(get_db)
+):
+    try:
+        search_results = await search_manager.search(
+            query=query_request.query,
+            filters=query_request.filters
+        )
+        
+        return {
+            "status": "success",
+            "hits": search_results['hits'],
+            "total_hits": search_results['nbHits'],
+            "processing_time_ms": search_results['processingTimeMs']
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 @app.post("/semantic_search")
 async def query_endpoint(
