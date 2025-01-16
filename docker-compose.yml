@@ -41,11 +41,9 @@ services:
     volumes:
       - meili_data:/meili_data
     healthcheck:
-      test: ["CMD", "wget", "--no-verbose", "--spider",  "http://localhost:7700/health"]
-      interval: 30s      # Increased from 10s
-      timeout: 10s       # Increased from 5s
-      retries: 5
-      start_period: 40s  # Added start period to give container time to initialize
+      test: set -o pipefail;curl -fsS http://localhost:7700/health | grep -q '{"status":"available"}'
+      retries: 3
+      timeout: 5s
     restart: unless-stopped
 
   data-service:
