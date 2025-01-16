@@ -55,7 +55,7 @@ services:
     environment:
       - INDEX_NAME=products-index
       - DIMENSION=512
-      - PRODUCTS_FILE=products_1.json
+      - PRODUCTS_FILE=products.json
       - LIMIT=10
       - VERBOSE=true
       - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/products_db
