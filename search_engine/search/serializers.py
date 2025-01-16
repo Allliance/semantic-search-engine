@@ -7,7 +7,7 @@ class StringListField(serializers.ListField):
         super().__init__(**kwargs)
 
 class SearchRequestSerializer(serializers.Serializer):
-    query = serializers.CharField(required=True)
+    query = serializers.CharField(required=False, allow_null=True, allow_blank=True)
     category_name = StringListField(required=False, allow_null=True)
     currency = serializers.CharField(required=False, allow_null=True, allow_blank=True)
     min_current_price = serializers.FloatField(required=False, allow_null=True, min_value=0)

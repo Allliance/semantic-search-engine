@@ -1,5 +1,6 @@
 from sqlalchemy.orm import Session
 from typing import List, Dict, Set, Optional
+from sqlalchemy import desc, cast, DateTime
 from collections import defaultdict
 import json
 from models import ProductModel, SessionLocal
@@ -52,6 +53,42 @@ class ProductManager:
             print(f"Error getting enum values for {enum_name}: {str(e)}")
             return []
 
+
+    def get_top_k_recent_products(self, k: int, session: Optional[Session] = None) -> List[ProductModel]:
+        """
+        Retrieve the top K products with the most recent update_date from meta_data
+        
+        Args:
+            db_session: SQLAlchemy database session
+            k (int): Number of products to retrieve (default: 10)
+            
+        Returns:
+            List[ProductModel]: List of K most recently updated products
+        """
+        
+        db_session = session or self.db
+        
+        # Method 1: Using raw SQL (most efficient for PostgreSQL)
+        #query = text("""
+        #    SELECT *
+        #    FROM products
+        #    WHERE meta_data->>'update_date' IS NOT NULL
+        #    ORDER BY (meta_data->>'update_date')::timestamp DESC
+        #    LIMIT :k
+        #""")
+        
+        #result = db_session.execute(query, {'k': k})
+        #products = [ProductModel(**dict(row)) for row in result]
+        
+        # Method 2: Using SQLAlchemy ORM
+        products = db_session.query(ProductModel)\
+            .filter(ProductModel.meta_data['update_date'].isnot(None))\
+            .order_by(desc(cast(ProductModel.meta_data['update_date'].astext, DateTime)))\
+            .limit(k)\
+            .all()
+        
+        return products
+        
     def add_product(self, product: Optional[Product] = None, product_dict: Optional[Dict] = None, session: Optional[Session] = None) -> None:
         """Add or update a product in the database"""
         if product_dict is None and product is not None:

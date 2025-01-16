@@ -226,6 +226,7 @@ document.addEventListener('DOMContentLoaded', function() {
             }
             
             const filters_query = params.toString();
+            
 
             const response1Promise = fetch(`http://localhost:8000/api/semantic-search?query=${query}&${filters_query}`)
             .then(response => {
@@ -385,4 +386,5 @@ border-radius: 5px;
             fetchProducts();
         }
     });
+    fetchProducts();
 });

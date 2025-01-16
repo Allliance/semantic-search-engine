@@ -22,6 +22,8 @@ load_dotenv()
 INDEX_NAME = os.getenv('INDEX_NAME', 'products-index')
 INITIAL_INDEX = os.getenv('INITIAL_INDEX', 'false').lower() == 'true'
 DIMENSION = int(os.getenv('DIMENSION', '512'))
+TOP_K = int(os.getenv('DIMENSION', '30'))
+HYBRID_SEARCH = os.getenv('HYBRID_SEARCH', 'true').lower() == 'true'
 PRODUCTS_FILE = os.getenv('PRODUCTS_FILE', 'products.json')
 LIMIT = int(os.getenv('LIMIT', '-1'))
 VERBOSE = os.getenv('VERBOSE', 'false').lower() == 'true'
@@ -143,7 +145,9 @@ async def startup_event():
     initialize_database()
     initialize_service()
     initialize_product_manager()
-    initialize_search_manager()
+    
+    if HYBRID_SEARCH:
+        initialize_search_manager()
 
 @app.get("/health")
 async def health_check():
@@ -168,7 +172,9 @@ async def index_product_endpoint(
         
         result = index_single_product(new_product)
         product_manager.add_product(product=new_product)
-        text_search_manager.index_product(new_product)
+        
+        if HYBRID_SEARCH:
+            text_search_manager.index_product(new_product)
         
         return result
     
@@ -189,7 +195,7 @@ async def keyword_search(
     db: Session = Depends(get_db)
 ):
     try:
-        search_results = await search_manager.search(
+        search_results = await text_search_manager.search(
             query=query_request.query,
             filters=query_request.filters
         )
@@ -201,6 +207,8 @@ async def keyword_search(
             "processing_time_ms": search_results['processingTimeMs']
         }
     except Exception as e:
+        print(str(e))
+        raise(e)
         raise HTTPException(status_code=500, detail=str(e))
 
 @app.post("/semantic_search")
@@ -209,14 +217,18 @@ async def query_endpoint(
     db: Session = Depends(get_db)
 ):
     product_manager = ProductManager(db)
-    
+    query = query_request.query
     try:
-        query_embedding = encoder.encode_text(query_request.query)
-        top_image_ids = index.query(query_embedding, query_request.filters)
-        top_ids = [image_id.split('#')[0] for image_id in top_image_ids]
-        ranked_ids = rank_products(top_ids)
         
-        products = product_manager.get_products_by_id(ranked_ids)
+        if query and query.strip() == "":
+            products = product_manager.get_top_k_recent_products(TOP_K)
+        else:
+            query_embedding = encoder.encode_text(query_request.query)
+            top_image_ids = index.query(query_embedding, TOP_K, query_request.filters)
+            top_ids = [image_id.split('#')[0] for image_id in top_image_ids]
+            ranked_ids = rank_products(top_ids)
+            
+            products = product_manager.get_products_by_id(ranked_ids)
         response = [product.to_dict() for product in products]
         
         return {"results": response}

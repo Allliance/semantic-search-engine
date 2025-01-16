@@ -37,6 +37,126 @@ class SearchPageView(TemplateView):
         
         return context
 
+def prepare_filters_for_data_service(validated_data: Dict[str, Any]) -> Dict[str, Any]:
+    """Prepare filters in the format expected by the data service"""
+    prepared_filters = {}
+    
+    if category_name := validated_data.get('category_name'):
+        prepared_filters['category'] = category_name
+    
+    if validated_data.get('currency'):
+        prepared_filters['price']= {
+            'currency': validated_data['currency']
+        }
+        if validated_data.get('min_current_price') is not None:
+            prepared_filters['price']['min'] = validated_data['min_current_price']
+        if validated_data.get('max_current_price') is not None:
+            prepared_filters['price']['max'] = validated_data['max_current_price']
+    
+    if update_date := validated_data.get('update_date'):
+        prepared_filters['update_date'] = update_date
+    
+    if shop_name := validated_data.get('shop_name'):
+        prepared_filters['shop'] = shop_name
+    
+    if status := validated_data.get('status'):
+        prepared_filters['status'] = status
+    
+    if region := validated_data.get('region'):
+        prepared_filters['region'] = region
+    
+    if off_percent := validated_data.get('off_percent'):
+        prepared_filters['discount'] = off_percent
+    
+    return prepared_filters
+
+
+def validate_fields(validated_data: Dict[str, Any]) -> None:
+    """Validate individual fields against backend data"""
+    errors = {}
+
+    # Get valid options from backend
+    
+    
+    enums = get_enums()
+    valid_categories = enums.get('categories')
+    valid_currencies = enums.get('currencies')
+    valid_shops = enums.get('shops')
+    valid_regions = enums.get('regions')
+
+    if category_name := validated_data.get('category_name'):
+        try:
+            FilterValidator.validate_category(category_name, valid_categories)
+        except ValidationError as e:
+            errors['category_name'] = e.detail
+
+    if currency := validated_data.get('currency'):
+        try:
+            FilterValidator.validate_currency(currency, valid_currencies)
+        except ValidationError as e:
+            errors['currency'] = e.detail
+
+    if shop_name := validated_data.get('shop_name'):
+        try:
+            FilterValidator.validate_shop(shop_name, valid_shops)
+        except ValidationError as e:
+            errors['shop_name'] = e.detail
+
+    if region := validated_data.get('region'):
+        try:
+            FilterValidator.validate_region(region, valid_regions)
+        except ValidationError as e:
+            errors['region'] = e.detail
+
+    if status := validated_data.get('status'):
+        try:
+            FilterValidator.validate_status(status)
+        except ValidationError as e:
+            errors['status'] = e.detail
+
+    if update_date := validated_data.get('update_date'):
+        try:
+            FilterValidator.validate_update_date(update_date)
+        except ValidationError as e:
+            errors['update_date'] = e.detail
+
+    if errors:
+        raise ValidationError(errors)
+
+
+def get_filters_data_from_request(request):
+    # Create data dictionary for serializer
+    data = {
+        # 'category_name': request.GET.get('category_name', None).split(","),
+        'currency': request.GET.get('currency'),
+        'min_current_price': request.GET.get('min_current_price'),
+        'max_current_price': request.GET.get('max_current_price'),
+        'update_date': request.GET.get('update_date'),
+        # 'shop_name': request.GET.get('shop_name'),
+        'status': request.GET.get('status'),
+        'region': request.GET.get('region'),
+        'off_percent': request.GET.get('off_percent')
+    }
+    
+    list_fields = ['category_name', 'shop_name']
+    
+    for field in list_fields:
+        if request.GET.get(field) is not None:
+            data[field] = request.GET.get(field).split(",")
+
+
+    # Convert string values to appropriate types
+    if data['min_current_price']:
+        data['min_current_price'] = float(data['min_current_price'])
+    if data['max_current_price']:
+        data['max_current_price'] = float(data['max_current_price'])
+    if data['off_percent']:
+        data['off_percent'] = float(data['off_percent'])
+    
+    log_search_request(f"Request parameters: {data}")
+    
+    return data
+
 class SemanticSearchAPI(APIView):
     def get(self, request):
         try:
@@ -48,52 +168,27 @@ class SemanticSearchAPI(APIView):
                 with open("test_products.json") as f:
                     return Response(json.load(f))
             
-            # Create data dictionary for serializer
-            data = {
-                'query': query,
-                # 'category_name': request.GET.get('category_name', None).split(","),
-                'currency': request.GET.get('currency'),
-                'min_current_price': request.GET.get('min_current_price'),
-                'max_current_price': request.GET.get('max_current_price'),
-                'update_date': request.GET.get('update_date'),
-                # 'shop_name': request.GET.get('shop_name'),
-                'status': request.GET.get('status'),
-                'region': request.GET.get('region'),
-                'off_percent': request.GET.get('off_percent')
-            }
+            filters_data = get_filters_data_from_request(request)
             
-            list_fields = ['category_name', 'shop_name']
+            filters_data['query'] = query
             
-            for field in list_fields:
-                if request.GET.get(field) is not None:
-                    data[field] = request.GET.get(field).split(",")
+            serializer = SearchRequestSerializer(data=filters_data)
             
-            # Convert string values to appropriate types
-            if data['min_current_price']:
-                data['min_current_price'] = float(data['min_current_price'])
-            if data['max_current_price']:
-                data['max_current_price'] = float(data['max_current_price'])
-            if data['off_percent']:
-                data['off_percent'] = float(data['off_percent'])
-            
-            log_search_request(f"Request parameters: {data}")
-            
-            serializer = SearchRequestSerializer(data=data)
-            
+            print('talar1')
             if not serializer.is_valid():
                 return Response(
                     serializer.errors, 
                     status=status.HTTP_400_BAD_REQUEST
                 )
-            
-            # Get validated data
+            print("yowwww")
+            # Get validated data 
             validated_data = serializer.validated_data
             
             # Validate individual fields against backend data
-            self.validate_fields(validated_data)
+            validate_fields(validated_data)
             
             # Prepare filters for data service
-            data_service_filters = self.prepare_filters_for_data_service(validated_data)
+            data_service_filters = prepare_filters_for_data_service(validated_data)
             
             # Call the data service
             requests.get(f"{settings.DATA_SERVICE_URL}/health")
@@ -127,90 +222,6 @@ class SemanticSearchAPI(APIView):
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
 
-    def validate_fields(self, validated_data: Dict[str, Any]) -> None:
-        """Validate individual fields against backend data"""
-        errors = {}
-
-        # Get valid options from backend
-        
-        
-        enums = get_enums()
-        valid_categories = enums.get('categories')
-        valid_currencies = enums.get('currencies')
-        valid_shops = enums.get('shops')
-        valid_regions = enums.get('regions')
-
-        if category_name := validated_data.get('category_name'):
-            try:
-                FilterValidator.validate_category(category_name, valid_categories)
-            except ValidationError as e:
-                errors['category_name'] = e.detail
-
-        if currency := validated_data.get('currency'):
-            try:
-                FilterValidator.validate_currency(currency, valid_currencies)
-            except ValidationError as e:
-                errors['currency'] = e.detail
-
-        if shop_name := validated_data.get('shop_name'):
-            try:
-                FilterValidator.validate_shop(shop_name, valid_shops)
-            except ValidationError as e:
-                errors['shop_name'] = e.detail
-
-        if region := validated_data.get('region'):
-            try:
-                FilterValidator.validate_region(region, valid_regions)
-            except ValidationError as e:
-                errors['region'] = e.detail
-
-        if status := validated_data.get('status'):
-            try:
-                FilterValidator.validate_status(status)
-            except ValidationError as e:
-                errors['status'] = e.detail
-
-        if update_date := validated_data.get('update_date'):
-            try:
-                FilterValidator.validate_update_date(update_date)
-            except ValidationError as e:
-                errors['update_date'] = e.detail
-
-        if errors:
-            raise ValidationError(errors)
-
-    def prepare_filters_for_data_service(self, validated_data: Dict[str, Any]) -> Dict[str, Any]:
-        """Prepare filters in the format expected by the data service"""
-        prepared_filters = {}
-        
-        if category_name := validated_data.get('category_name'):
-            prepared_filters['category'] = category_name
-        
-        if validated_data.get('currency'):
-            prepared_filters['price']= {
-                'currency': validated_data['currency']
-            }
-            if validated_data.get('min_current_price') is not None:
-                prepared_filters['price']['min'] = validated_data['min_current_price']
-            if validated_data.get('max_current_price') is not None:
-                prepared_filters['price']['max'] = validated_data['max_current_price']
-        
-        if update_date := validated_data.get('update_date'):
-            prepared_filters['update_date'] = update_date
-        
-        if shop_name := validated_data.get('shop_name'):
-            prepared_filters['shop'] = shop_name
-        
-        if status := validated_data.get('status'):
-            prepared_filters['status'] = status
-        
-        if region := validated_data.get('region'):
-            prepared_filters['region'] = region
-        
-        if off_percent := validated_data.get('off_percent'):
-            prepared_filters['discount'] = off_percent
-        
-        return prepared_filters
 
 class KeywordSearchAPI(APIView):
     """
@@ -227,32 +238,31 @@ class KeywordSearchAPI(APIView):
                     status=status.HTTP_400_BAD_REQUEST
                 )
 
-            # Extract optional filters
-            filters = {
-                'category': request.GET.get('category'),
-                'region': request.GET.get('region'),
-                'shop': request.GET.get('shop'),
-                'min_price': request.GET.get('min_price'),
-                'max_price': request.GET.get('max_price'),
-                'currency': request.GET.get('currency'),
-                'status': request.GET.get('status')
-            }
-
-            # Remove None values
-            filters = {k: v for k, v in filters.items() if v is not None}
-
-            # Log request
-            log_search_request(request, {'keyword': keyword, **filters})
-
-            # Validate filters
-            enums = get_enums()
-            validator = FilterValidator(enums)
-            validator.validate_filters(filters)
-
+            
+            filters_data = get_filters_data_from_request(request)
+            
+            serializer = SearchRequestSerializer(data=filters_data)
+            
+            if not serializer.is_valid():
+                return Response(
+                    serializer.errors, 
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+            
+            # Get validated data
+            validated_data = serializer.validated_data
+            
+            # Validate individual fields against backend data
+            validate_fields(validated_data)
+            
+            # Prepare filters for data service
+            data_service_filters = prepare_filters_for_data_service(validated_data)
+            
+            
             # Prepare request to data service
             search_data = {
                 'keyword': keyword,
-                'filters': filters
+                'filters': data_service_filters
             }
 
             # Send request to data service
@@ -263,13 +273,6 @@ class KeywordSearchAPI(APIView):
             
             response.raise_for_status()
             results = response.json()
-
-            # return Response({
-            #     'keyword': keyword,
-            #     'filters': filters,
-            #     'results': results.get('results', []),
-            #     'total_count': results.get('total_count', 0)
-            # })
             
             return results
 

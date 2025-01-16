@@ -17,7 +17,7 @@ class Index:
         
         return response['vectors']
     
-    def query(self, query_embedding, filters=None):
+    def query(self, query_embedding, top_k, filters=None):
         print(filters)
         index = self.pc.Index(self.index_name)
         
@@ -25,7 +25,7 @@ class Index:
 
         response = index.query(
             vector=query_embedding.tolist(),
-            top_k=30,
+            top_k=top_k,
             include_values=True,
             include_metadata=True,
             filter=pinecone_filters
