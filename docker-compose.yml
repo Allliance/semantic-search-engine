@@ -45,7 +45,7 @@ services:
       retries: 5
 
   data-service:
-    build: ./data-service
+    build: ./data
     ports:
       - "5000:5000"
     volumes:
