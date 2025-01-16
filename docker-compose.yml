@@ -46,6 +46,7 @@ services:
       timeout: 10s       # Increased from 5s
       retries: 5
       start_period: 40s  # Added start period to give container time to initialize
+    restart: unless-stopped
 
   data-service:
     build: ./data
@@ -70,7 +71,8 @@ services:
         condition: service_healthy
       meilisearch:
         condition: service_healthy
-    restart: unless-stopped
+    restart: on-failure
+
 
   backend:
     build: ./search_engine
@@ -90,7 +92,7 @@ services:
       sh -c "python manage.py migrate &&
              python manage.py collectstatic --noinput &&
              python manage.py runserver 0.0.0.0:8000"
-    restart: unless-stopped
+    restart: on-failure
 
 volumes:
   postgres_data:
