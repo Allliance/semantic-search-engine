@@ -21,7 +21,7 @@ load_dotenv()
 INDEX_NAME = os.getenv('INDEX_NAME', 'products-index')
 INITIAL_INDEX = os.getenv('INITIAL_INDEX', 'false').lower() == 'true'
 DIMENSION = int(os.getenv('DIMENSION', '512'))
-PRODUCTS_FILE = os.getenv('PRODUCTS_FILE', 'products_1.json')
+PRODUCTS_FILE = os.getenv('PRODUCTS_FILE', 'products.json')
 LIMIT = int(os.getenv('LIMIT', '-1'))
 VERBOSE = os.getenv('VERBOSE', 'false').lower() == 'true'
 TARGET_ENUMS = [("categories", "category_name"),

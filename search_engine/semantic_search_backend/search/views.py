@@ -51,16 +51,22 @@ class SearchView(APIView):
             # Create data dictionary for serializer
             data = {
                 'query': query,
-                'category_name': request.GET.get('category_name').split(","),
+                # 'category_name': request.GET.get('category_name', None).split(","),
                 'currency': request.GET.get('currency'),
                 'min_current_price': request.GET.get('min_current_price'),
                 'max_current_price': request.GET.get('max_current_price'),
                 'update_date': request.GET.get('update_date'),
-                'shop_name': request.GET.get('shop_name'),
+                # 'shop_name': request.GET.get('shop_name'),
                 'status': request.GET.get('status'),
                 'region': request.GET.get('region'),
                 'off_percent': request.GET.get('off_percent')
             }
+            
+            list_fields = ['category_name', 'shop_name']
+            
+            for field in list_fields:
+                if request.GET.get(field) is not None:
+                    data[field] = request.GET.get(field).split(",")
             
             # Convert string values to appropriate types
             if data['min_current_price']:

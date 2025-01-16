@@ -101,36 +101,14 @@ document.addEventListener('DOMContentLoaded', function() {
     // Handle apply filters
     const applyFiltersButton = document.querySelector('.apply-filters');
     applyFiltersButton.addEventListener('click', function() {
-    window.fetchProducts();
-    // Close filter panel
-    // filterPanel.classList.remove('open');
-    // productsGrid.classList.remove('shifted');
-    // isFilterPanelOpen = false;
-    // filterToggle.querySelector('i').style.transform = 'rotate(0deg)';
+        window.fetchProducts();
+        
+        // Close filter panel
+        // filterPanel.classList.remove('open');
+        // productsGrid.classList.remove('shifted');
+        // isFilterPanelOpen = false;
+        // filterToggle.querySelector('i').style.transform = 'rotate(0deg)';
     });
     
-    // async function applyFilters(filters) {
-    // try {
-    // const response = await fetch('/api/filter-products', {
-    // method: 'POST',
-    // headers: {
-    // 'Content-Type': 'application/json',
-    // 'X-CSRFToken': '{{ csrf_token }}'
-    // },
-    // body: JSON.stringify(filters)
-    // });
     
-    // if (!response.ok) throw new Error('Failed to apply filters');
-    
-    // const data = await response.json();
-    // updateProductsGrid(data.products);
-    // } catch (error) {
-    // console.error('Error applying filters:', error);
-    // }
-    // }
-    
-    function updateProductsGrid(products) {
-    // Implementation of updating the products grid
-    // This should match your existing product display logic
-    }
     });

@@ -1,5 +1,5 @@
 # other files
-data/products_1.json
+data/products.json
 .vscode/
 backend/semantic_search_backend/staticfiles/
 

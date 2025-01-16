@@ -311,18 +311,12 @@ border-radius: 5px;
     });
 
     searchButton.addEventListener('click', () => {
-        const query = searchInput.value.trim();
-        if (query) {
-            fetchProducts();
-        }
+        fetchProducts();
     });
 
     searchInput.addEventListener('keypress', (e) => {
         if (e.key === 'Enter') {
-            const query = searchInput.value.trim();
-            if (query) {
-                fetchProducts();
-            }
+            fetchProducts();
         }
     });
 });
