@@ -37,7 +37,7 @@ class SearchPageView(TemplateView):
         
         return context
 
-class SearchView(APIView):
+class SemanticSearchAPI(APIView):
     def get(self, request):
         try:
             # Extract query parameters
@@ -99,7 +99,7 @@ class SearchView(APIView):
             requests.get(f"{settings.DATA_SERVICE_URL}/health")
             
             response = requests.post(
-                f"{settings.DATA_SERVICE_URL}/query",
+                f"{settings.DATA_SERVICE_URL}/semantic_search",
                 json={
                     "query": validated_data['query'],
                     "filters": data_service_filters
@@ -211,3 +211,80 @@ class SearchView(APIView):
             prepared_filters['discount'] = off_percent
         
         return prepared_filters
+
+class KeywordSearchAPI(APIView):
+    """
+    API endpoint for keyword-based search functionality.
+    """
+    def get(self, request):
+        try:
+            # Extract query parameters
+            keyword = request.GET.get('keyword', '').strip()
+            
+            if not keyword:
+                return Response(
+                    {"error": "Keyword parameter is required"}, 
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+
+            # Extract optional filters
+            filters = {
+                'category': request.GET.get('category'),
+                'region': request.GET.get('region'),
+                'shop': request.GET.get('shop'),
+                'min_price': request.GET.get('min_price'),
+                'max_price': request.GET.get('max_price'),
+                'currency': request.GET.get('currency'),
+                'status': request.GET.get('status')
+            }
+
+            # Remove None values
+            filters = {k: v for k, v in filters.items() if v is not None}
+
+            # Log request
+            log_search_request(request, {'keyword': keyword, **filters})
+
+            # Validate filters
+            enums = get_enums()
+            validator = FilterValidator(enums)
+            validator.validate_filters(filters)
+
+            # Prepare request to data service
+            search_data = {
+                'keyword': keyword,
+                'filters': filters
+            }
+
+            # Send request to data service
+            response = requests.post(
+                f"{settings.DATA_SERVICE_URL}/keyword_search",
+                json=search_data
+            )
+            
+            response.raise_for_status()
+            results = response.json()
+
+            # return Response({
+            #     'keyword': keyword,
+            #     'filters': filters,
+            #     'results': results.get('results', []),
+            #     'total_count': results.get('total_count', 0)
+            # })
+            
+            return results
+
+        except ValidationError as e:
+            return Response(
+                {'error': str(e)}, 
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        except requests.RequestException as e:
+            return Response(
+                {'error': f"Data service error: {str(e)}"}, 
+                status=status.HTTP_503_SERVICE_UNAVAILABLE
+            )
+        except Exception as e:
+            return Response(
+                {'error': f"Unexpected error: {str(e)}"}, 
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )

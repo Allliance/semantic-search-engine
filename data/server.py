@@ -165,7 +165,7 @@ async def get_enums(db: Session = Depends(get_db)):
         e[0]: product_manager.get_enum_values(e[1]) for e in TARGET_ENUMS
     }
 
-@app.post("/query")
+@app.post("/semantic_search")
 async def query_endpoint(
     query_request: QueryRequest,
     db: Session = Depends(get_db)

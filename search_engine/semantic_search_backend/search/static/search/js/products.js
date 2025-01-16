@@ -190,7 +190,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 params.append('off_percent', filters.off_percent);
             }
     
-            const response = await fetch(`http://localhost:8000/api/search?${params.toString()}`);
+            const response = await fetch(`http://localhost:8000/api/semantic-search?${params.toString()}`);
             
             const data = await response.json();
             if (!response.ok) {

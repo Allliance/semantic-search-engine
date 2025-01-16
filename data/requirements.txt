@@ -10,3 +10,4 @@ sqlalchemy-utils
 psycopg2-binary
 redis
 alembic
+meilisearch

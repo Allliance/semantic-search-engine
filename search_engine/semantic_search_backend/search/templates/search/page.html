@@ -1,117 +1,210 @@
 {% load static %}
 <!DOCTYPE html> 
 <html lang="en">
-   <head>
-      <meta charset="UTF-8">
-      <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      <title>Fashion Search</title>
-      <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-      <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
-      <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/noUiSlider/15.7.1/nouislider.min.css">
-      <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.4.1/semantic.min.css">
-      <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
-      <script src="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.4.1/semantic.min.js"></script>
-      <script src="https://cdnjs.cloudflare.com/ajax/libs/noUiSlider/15.7.1/nouislider.min.js"></script>
-      <link rel="stylesheet" href="{% static 'search/css/main.css?v=1' %}">
-      <link rel="stylesheet" href="{% static 'search/css/filter.css?v=1' %}">
-      <link rel="stylesheet" href="{% static 'search/css/errors.css?v=1' %}">
-   </head>
-   <body>
-      <div class="search-container">
-         <h1 class="search-title">The style finds you!</h1>
-         <div class="search-box">
-            <div class="input-group">
-               <input type="text" class="search-input" placeholder="Search for clothes...">
-               <button class="search-button">
-               <i class="fas fa-search"></i>
-               </button>
-            </div>
-            <button class="filter-toggle" id="filter-button">
-            <i class="fas fa-filter"></i>
-            <span>Filters</span>
-            </button>
-         </div>
-         <div class="filter-panel">
-            <div class="filter-content">
-               <h3>Filters</h3>
-               <!-- Price Range -->
-               <div class="filter-section">
-                  <div class="filter-title">Price Range</div>
-                  <div class="price-inputs">
-                     <input type="number" id="minPrice" placeholder="Min" min="0">
-                     <span>-</span>
-                     <input type="number" id="maxPrice" placeholder="Max" min="0">
-                     <select id="currency" class="currency-select">
-                        <option value="">Select currency</option>
-                        {% for currency in currencies %}
-                        <option value="{{ currency }}">{{ currency }}</option>
-                        {% endfor %}
-                     </select>
-                  </div>
-               </div>
-               <!-- Regions -->
-               <div class="filter-section">
-                  <div class="filter-title">Region</div>
-                  <select id="region" class="region-select">
-                     <option value="">Select region</option>
-                     {% for region in regions %}
-                     <option value="{{ region }}">{{ region }}</option>
-                     {% endfor %}
-                  </select>
-               </div>
-               <!-- Categories -->
-               <div class="filter-section">
-                  <div class="filter-title">Categories</div>
-                  <select name="categories" multiple="" class="ui fluid dropdown search" id="categories-dropdown">
-                     <option value="">Select categories</option>
-                     {% for category in categories %}
-                     <option value="{{ category }}">{{ category }}</option>
-                     {% endfor %}
-                  </select>
-               </div>
-               <!-- Shops -->
-               <div class="filter-section">
-                  <div class="filter-title">Shops</div>
-                  <div class="checkbox-grid">
-                     {% for shop in shops %}
-                     <label>
-                     <input type="checkbox" name="shops" value="{{ shop }}">
-                     {{ shop }}
-                     </label>
-                     {% endfor %}
-                  </div>
-               </div>
-               <!-- Status -->
-               <div class="filter-section">
-                  <div class="filter-title">Status</div>
-                  <div class="status-options">
-                     <label><input type="radio" name="status" value="" checked> All</label>
-                     <label><input type="radio" name="status" value="IN_STOCK"> In Stock</label>
-                     <label><input type="radio" name="status" value="OUT_OF_STOCK"> Out of Stock</label>
-                  </div>
-               </div>
-               <!-- Apply Filters Button -->
-               <button class="apply-filters">Apply Filters</button>
-            </div>
-         </div>
-         <div class="error-container">
-            <div class="error-messages animate__animated animate__fadeIn">
-            <!-- Error messages will be inserted here dynamically -->
-            </div>
-         </div>
-         <div class="loading-spinner"></div>
-         <div class="products-grid"></div>
-      </div>
-      <div class="modal">
-         <div class="modal-content animate__animated animate__fadeIn">
-            <span class="close-modal">&times;</span>
-            <div class="modal-grid">
-               <div class="modal-images"></div>
-               <div class="modal-details"></div>
-            </div>
-         </div>
-      </div>
-      <script src="{% static 'search/js/products.js' %}"></script>
-      <script src="{% static 'search/js/filter.js' %}"></script>
-   </body>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Fashion Search</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/noUiSlider/15.7.1/nouislider.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.4.1/semantic.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.4.1/semantic.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/noUiSlider/15.7.1/nouislider.min.js"></script>
+<link rel="stylesheet" href="{% static 'search/css/main.css?v=1' %}">
+<link rel="stylesheet" href="{% static 'search/css/filter.css?v=1' %}">
+<link rel="stylesheet" href="{% static 'search/css/errors.css?v=1' %}">
+<style>
+.filter-section {
+margin-bottom: 1.5rem;
+}
+
+.ui.form .fields {
+margin-bottom: 0;
+}
+
+.ui.right.labeled.input {
+display: flex;
+align-items: center;
+}
+
+.ui.right.labeled.input .ui.label {
+margin-right: 1em;
+background: none;
+padding-left: 0;
+flex: 0 0 auto;
+min-width: 150px;
+}
+
+.ui.right.labeled.input input {
+flex: 1;
+border-radius: 4px;
+}
+
+.checkbox-grid {
+display: grid;
+grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+gap: 10px;
+margin-top: 10px;
+}
+
+.ui.radio.checkbox {
+margin-right: 15px;
+}
+
+.apply-filters {
+width: 100%;
+margin-top: 20px;
+}
+
+.price-inputs {
+display: flex;
+gap: 10px;
+align-items: center;
+}
+
+.price-inputs input {
+width: 100px;
+}
+</style>
+</head>
+<body>
+<div class="search-container">
+<h1 class="search-title">The style finds you!</h1>
+<div class="search-box">
+<div class="input-group">
+<input type="text" class="search-input" placeholder="Search for clothes...">
+<button class="search-button">
+<i class="fas fa-search"></i>
+</button>
+</div>
+<button class="filter-toggle" id="filter-button">
+<i class="fas fa-filter"></i>
+<span>Filters</span>
+</button>
+</div>
+<div class="filter-panel">
+<div class="filter-content">
+<h3>Filters</h3>
+
+<!-- Keyword Search -->
+<div class="filter-section">
+<div class="ui right labeled input" style="width: 100%;">
+<div class="ui label">Any specific keywords?</div>
+<input type="text" id="keyword-search" placeholder="Enter keywords...">
+</div>
+</div>
+
+<!-- Price Range -->
+<div class="filter-section">
+<div class="ui right labeled input" style="width: 100%;">
+<div class="ui label">Price Range</div>
+<div class="price-inputs">
+<input type="number" id="minPrice" placeholder="Min" min="0" class="ui input">
+<span>-</span>
+<input type="number" id="maxPrice" placeholder="Max" min="0" class="ui input">
+<select class="ui dropdown" id="currency">
+<option value="">Currency</option>
+{% for currency in currencies %}
+<option value="{{ currency }}">{{ currency }}</option>
+{% endfor %}
+</select>
+</div>
+</div>
+</div>
+
+<!-- Regions -->
+<div class="filter-section">
+<div class="ui right labeled input" style="width: 100%;">
+<div class="ui label">Region</div>
+<select class="ui dropdown" id="region" style="width: 100%;">
+<option value="">Select region</option>
+{% for region in regions %}
+<option value="{{ region }}">{{ region }}</option>
+{% endfor %}
+</select>
+</div>
+</div>
+
+<!-- Categories -->
+<div class="filter-section">
+<div class="ui right labeled input" style="width: 100%;">
+<div class="ui label">Categories</div>
+<select name="categories" multiple="" class="ui fluid dropdown search" id="categories-dropdown">
+<option value="">Select categories</option>
+{% for category in categories %}
+<option value="{{ category }}">{{ category }}</option>
+{% endfor %}
+</select>
+</div>
+</div>
+
+<!-- Shops -->
+<div class="filter-section">
+<div class="ui right labeled input" style="width: 100%;">
+<div class="ui label">Shops</div>
+<div class="checkbox-grid">
+{% for shop in shops %}
+<div class="ui checkbox">
+<input type="checkbox" name="shops" value="{{ shop }}">
+<label>{{ shop }}</label>
+</div>
+{% endfor %}
+</div>
+</div>
+</div>
+
+<!-- Status -->
+<div class="filter-section">
+<div class="ui right labeled input" style="width: 100%;">
+<div class="ui label">Status</div>
+<div class="status-options">
+<div class="ui radio checkbox">
+<input type="radio" name="status" value="" checked>
+<label>All</label>
+</div>
+<div class="ui radio checkbox">
+<input type="radio" name="status" value="IN_STOCK">
+<label>In Stock</label>
+</div>
+<div class="ui radio checkbox">
+<input type="radio" name="status" value="OUT_OF_STOCK">
+<label>Out of Stock</label>
+</div>
+</div>
+</div>
+</div>
+
+<!-- Apply Filters Button -->
+<button class="ui primary button apply-filters">Apply Filters</button>
+</div>
+</div>
+<div class="error-container">
+<div class="error-messages animate__animated animate__fadeIn">
+<!-- Error messages will be inserted here dynamically -->
+</div>
+</div>
+<div class="loading-spinner"></div>
+<div class="products-grid"></div>
+</div>
+<div class="modal">
+<div class="modal-content animate__animated animate__fadeIn">
+<span class="close-modal">&times;</span>
+<div class="modal-grid">
+<div class="modal-images"></div>
+<div class="modal-details"></div>
+</div>
+</div>
+</div>
+<script src="{% static 'search/js/products.js' %}"></script>
+<script src="{% static 'search/js/filter.js' %}"></script>
+<script>
+$(document).ready(function() {
+$('.ui.dropdown').dropdown();
+$('.ui.checkbox').checkbox();
+$('.ui.radio.checkbox').checkbox();
+});
+</script>
+</body>
 </html>
