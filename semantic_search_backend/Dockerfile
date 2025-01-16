@@ -17,8 +17,8 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY . .
 
 # Run migrations and collect static files
-RUN python manage1.py migrate && \
-    python manage2.py collectstatic --noinput
+RUN python manage.py migrate && \
+    python manage.py collectstatic --noinput
 
 # Run the application
 CMD ["python", "manage3.py", "runserver", "0.0.0.0:8000"]
