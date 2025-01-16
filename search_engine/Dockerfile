@@ -1,7 +1,7 @@
 # backend/Dockerfile
 FROM python:3.8-slim
 
-WORKDIR /app
+WORKDIR /app/semantic_search_backend
 
 # Install system dependencies
 RUN apt-get update && \
