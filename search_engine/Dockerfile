@@ -1,7 +1,11 @@
 # backend/Dockerfile
 FROM python:3.8-slim
 
-WORKDIR /app/semantic_search_backend
+# Set environment variables
+ENV PYTHONDONTWRITEBYTECODE 1
+ENV PYTHONUNBUFFERED 1
+
+WORKDIR /app
 
 # Install system dependencies
 RUN apt-get update && \
@@ -16,9 +20,6 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copy project
 COPY . .
 
-# Run migrations and collect static files
-RUN python manage.py migrate && \
-    python manage.py collectstatic --noinput
-
 # Run the application
-CMD ["gunicorn", "semantic_search_backend.wsgi:application", "--bind", "0.0.0.0:8000"]
+CMD ["gunicorn",  "--bind", "0.0.0.0:8000", "semantic_search_backend.wsgi:application"]
+
