@@ -73,7 +73,7 @@ services:
 
 
   backend:
-    build: ./semantic_search_backend
+    build: ./search_egine
     ports:
       - "8000:8000"
     environment:
