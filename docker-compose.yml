@@ -83,10 +83,10 @@ services:
       - MEILISEARCH_URL=http://meilisearch:7700
       - MEILISEARCH_MASTER_KEY=${MEILI_MASTER_KEY:-masterKey123}
     volumes:
-      - ./backend:/app
+      - .:/app
     depends_on:
       - data-service
-    command: python manage2.py runserver 0.0.0.0:8000
+    command: python manage.py runserver 0.0.0.0:8000
     restart: on-failure
 
 volumes:
