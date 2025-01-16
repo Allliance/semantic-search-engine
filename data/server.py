@@ -7,6 +7,7 @@ import os
 from dotenv import load_dotenv
 
 from models import init_db, get_db
+from database import init_database
 from product import Product
 from product_manager import ProductManager
 from index import Index
@@ -55,17 +56,29 @@ class ProductData(BaseModel):
     images: List[str]
     class Config:
         extra = "allow"
+        
 
-def initialize_service():
-    global index, encoder
-    index = Index(INDEX_NAME, DIMENSION)
-    print("Index initialized")
-    encoder = Encoder()
-    print("Encoder initialized")
+def initialize_product_manager():
+    global product_manager
+    db = next(get_db())
+    product_manager = ProductManager(db, PRODUCTS_FILE)
+
+def initialize_database():
+        
+    init_database()
     init_db()
     print("Database initialized")
     
-    print("Service initialized successfully")
+
+def initialize_service():
+    global index, encoder
+    
+    index = Index(INDEX_NAME, DIMENSION)
+    print("Index initialized")
+    
+    encoder = Encoder()
+    print("Encoder initialized")
+    
 
 def index_single_product(product: Product) -> Dict:
     """Index a single product from its JSON data"""
@@ -112,7 +125,9 @@ def index_single_product(product: Product) -> Dict:
 
 @app.on_event("startup")
 async def startup_event():
+    initialize_database()
     initialize_service()
+    initialize_product_manager()
 
 @app.get("/health")
 async def health_check():
