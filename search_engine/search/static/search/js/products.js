@@ -245,24 +245,26 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
                 return response.json();
                 });
-
             try {
                 const [data1, data2] = await Promise.all([response1Promise, response2Promise]);
                 const data = aggregateSearchResults(data1, data2);
+                
                 // Continue with the aggregated data
+                displayProducts(data);
             } catch (errorData) {
                 errorHandler.showErrors(errorData);
             }
             } else {
             try {
-                const data1 = await response1Promise;
+                const data = await response1Promise;
                 // Continue with data1
+                
+                displayProducts(data);
             } catch (errorData) {
                 errorHandler.showErrors(errorData);
             }
             }
 
-            displayProducts(data);
         } catch (error) {
             console.log(error);
             errorHandler.showErrors({
