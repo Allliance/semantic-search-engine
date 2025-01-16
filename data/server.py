@@ -55,6 +55,10 @@ text_search_manager: Optional[TextSearchManager] = None
 class QueryRequest(BaseModel):
     query: str
     filters: Dict = {}
+    
+class KeywordRequest(BaseModel):
+    keyword: str
+    filters: Dict = {}
 
 class ProductData(BaseModel):
     id: str
@@ -69,16 +73,16 @@ def initialize_product_manager():
     product_manager = ProductManager(db, PRODUCTS_FILE)
 
   
-def initialize_search_manager():
+async def initialize_search_manager():
     global text_search_manager, product_manager
     
     text_search_manager = TextSearchManager(
-        meilisearch_url=os.getenv("MEILISEARCH_URL"),
-        master_key=os.getenv("MEILISEARCH_MASTER_KEY"),
+        meilisearch_url="http://185.202.113.188:7700",#os.getenv("MEILISEARCH_URL"),
+        master_key="masterKey123",#os.getenv("MEILISEARCH_MASTER_KEY"),
         index_name="products"
     )
     
-    text_search_manager.index_products(product_manager)
+    await text_search_manager.index_products(product_manager)
 
 def initialize_database():
         
@@ -99,7 +103,7 @@ def initialize_service():
 
 def index_single_product(product: Product) -> Dict:
     """Index a single product from its JSON data"""
-    global index, encoder
+    global index, encoder, text_search_manager
     
     try:
         image_ids = [f"{product.id}#{image_url}" for image_url in product.image_urls]
@@ -132,6 +136,9 @@ def index_single_product(product: Product) -> Dict:
             
         index.upsert_embeddings(embeddings_dict)
         
+        if HYBRID_SEARCH:
+            text_search_manager.index_product(product.meta_data)
+        
         if VERBOSE:
             print(f"Product {product.id} added to the index")
         
@@ -147,7 +154,7 @@ async def startup_event():
     initialize_product_manager()
     
     if HYBRID_SEARCH:
-        initialize_search_manager()
+        await initialize_search_manager()
 
 @app.get("/health")
 async def health_check():
@@ -191,19 +198,22 @@ async def get_enums(db: Session = Depends(get_db)):
 
 @app.post("/keyword_search")
 async def keyword_search(
-    query_request: QueryRequest,
+    query_request: KeywordRequest,
     db: Session = Depends(get_db)
 ):
     try:
         search_results = await text_search_manager.search(
-            query=query_request.query,
+            keyword=query_request.keyword,
             filters=query_request.filters
         )
         
+        print(search_results['hits'])
+        
+        return search_results['hits']
         return {
             "status": "success",
             "hits": search_results['hits'],
-            "total_hits": search_results['nbHits'],
+            "total_hits": search_results['estimatedTotalHits'],
             "processing_time_ms": search_results['processingTimeMs']
         }
     except Exception as e:
@@ -234,6 +244,7 @@ async def query_endpoint(
         return {"results": response}
     
     except Exception as e:
+        raise(e)
         raise HTTPException(status_code=500, detail=str(e))
 
 if __name__ == '__main__':

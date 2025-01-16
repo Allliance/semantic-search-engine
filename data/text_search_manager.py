@@ -14,22 +14,19 @@ class TextSearchManager:
             'title',
             'description',
             'category_name',
-            'shop_name',
-            'brand',
-            'id'
         ])
         
         # Configure filterable attributes
-        self.index.update_filterable_attributes([
-            'category_name',
-            'currency',
-            'current_price',
-            'update_date',
-            'shop_name',
-            'status',
-            'region',
-            'off_percent'
-        ])
+        # self.index.update_filterable_attributes([
+        #     'category_name',
+        #     'currency',
+        #     'current_price',
+        #     'update_date',
+        #     'shop_name',
+        #     'status',
+        #     'region',
+        #     'off_percent'
+        # ])
 
     async def index_product(self, product_model) -> None:
         """Index a single product"""
@@ -48,7 +45,7 @@ class TextSearchManager:
         try:
             # Get all products from the database
             products = product_manager.get_all_products()
-            
+    
             # Prepare products for indexing
             documents = []
             for product in products:
@@ -56,9 +53,13 @@ class TextSearchManager:
                 product_dict['id'] = str(product_dict['id'])  # Ensure ID is string
                 documents.append(product_dict)
             
+            print(documents[:3])
+            
+            print("going to be added:", len(documents))
             # Batch index products
             if documents:
                 self.index.add_documents(documents)
+                print("docs added")
                 
         except Exception as e:
             print("Error indexing products:", str(e))
@@ -105,7 +106,7 @@ class TextSearchManager:
 
         return filter_conditions
 
-    async def search(self, query: str, filters: Dict = None) -> Dict:
+    async def search(self, keyword: str, filters: Dict = None) -> Dict:
         try:
             search_params = {}
             
@@ -115,7 +116,7 @@ class TextSearchManager:
                     search_params['filter'] = filter_conditions
 
             # Perform the search
-            results = self.index.search(query, search_params)
+            results = self.index.search(keyword, search_params)
             return results
         except Exception as e:
             raise HTTPException(status_code=500, detail=f"Search error: {str(e)}")
