@@ -128,6 +128,44 @@ document.addEventListener('DOMContentLoaded', function() {
     //     }
     //     hideLoading();
     // }
+    let p_portion = 0.6;
+
+    function aggregateSearchResults(sem_results, kw_results) {
+        // Create a map to keep track of unique products by their id
+        let productMap = new Map();
+
+        // Add sem_results to the map
+        sem_results.forEach(product => {
+            productMap.set(product.id, product);
+        });
+
+        // Add kw_results to the map, only if not already present
+        kw_results.forEach(product => {
+            if (!productMap.has(product.id)) {
+                productMap.set(product.id, product);
+            }
+        });
+
+        // Convert the map back to an array of products
+        let allProducts = Array.from(productMap.values());
+
+        // Calculate the number of products to take from sem_results based on p_portion
+        let semCount = Math.floor(p_portion * allProducts.length);
+        
+        // Filter sem_results and kw_results according to the map to retain order and uniqueness
+        let semFiltered = sem_results.filter(product => productMap.has(product.id));
+        let kwFiltered = kw_results.filter(product => productMap.has(product.id) && !semFiltered.includes(product));
+
+        // Take the required portion from sem_results
+        let aggregatedResults = semFiltered.slice(0, semCount);
+
+        // Fill the rest from kw_results
+        aggregatedResults = aggregatedResults.concat(kwFiltered.slice(0, allProducts.length - semCount));
+
+        return aggregatedResults;
+    }
+
+
 
     async function fetchProducts() {
         showLoading();
@@ -143,17 +181,14 @@ document.addEventListener('DOMContentLoaded', function() {
             region: document.getElementById('region')?.value,
             shop_name: document.querySelector('select[name="shop"]')?.value
         };
-    
+        
         // Get the current search query
         const query = document.querySelector('.search-input').value;
 
         try {
-            // Build query parameters
-            const params = new URLSearchParams({
-                query: query || ''
-            });
+            const params = new URLSearchParams({});
     
-            // Add filter parameters if they exist
+            // Build filter parameters if they exist
             if (filters.category_name) {
                 params.append('category_name', filters.category_name);
             }
@@ -189,15 +224,44 @@ document.addEventListener('DOMContentLoaded', function() {
             if (filters.off_percent) {
                 params.append('off_percent', filters.off_percent);
             }
-    
-            const response = await fetch(`http://localhost:8000/api/semantic-search?${params.toString()}`);
             
-            const data = await response.json();
-            if (!response.ok) {
-                errorHandler.showErrors(data);
-                return;
+            const filters_query = params.toString();
+
+            const response1Promise = fetch(`http://localhost:8000/api/semantic-search?query=${query}&${filters_query}`)
+            .then(response => {
+                if (!response.ok) {
+                return response.json().then(data => { throw data; });
+                }
+                return response.json();
+            });
+
+            const keyword = document.getElementById('keyword-search').value;
+
+            if (keyword) {
+            const response2Promise = fetch(`http://localhost:8000/api/keyword-search?keyword=${keyword}&${filters_query}`)
+                .then(response => {
+                if (!response.ok) {
+                    return response.json().then(data => { throw data; });
+                }
+                return response.json();
+                });
+
+            try {
+                const [data1, data2] = await Promise.all([response1Promise, response2Promise]);
+                const data = aggregateSearchResults(data1, data2);
+                // Continue with the aggregated data
+            } catch (errorData) {
+                errorHandler.showErrors(errorData);
             }
-            
+            } else {
+            try {
+                const data1 = await response1Promise;
+                // Continue with data1
+            } catch (errorData) {
+                errorHandler.showErrors(errorData);
+            }
+            }
+
             displayProducts(data);
         } catch (error) {
             console.log(error);
