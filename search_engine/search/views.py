@@ -174,13 +174,12 @@ class SemanticSearchAPI(APIView):
             
             serializer = SearchRequestSerializer(data=filters_data)
             
-            print('talar1')
             if not serializer.is_valid():
                 return Response(
                     serializer.errors, 
                     status=status.HTTP_400_BAD_REQUEST
                 )
-            print("yowwww")
+            
             # Get validated data 
             validated_data = serializer.validated_data
             
@@ -274,7 +273,7 @@ class KeywordSearchAPI(APIView):
             response.raise_for_status()
             results = response.json()
             
-            return results
+            return Response(results)
 
         except ValidationError as e:
             return Response(

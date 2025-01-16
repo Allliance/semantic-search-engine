@@ -248,8 +248,9 @@ document.addEventListener('DOMContentLoaded', function() {
                 });
             try {
                 const [data1, data2] = await Promise.all([response1Promise, response2Promise]);
+                console.log("salam");
                 const data = aggregateSearchResults(data1, data2);
-                
+                console.log(data);
                 // Continue with the aggregated data
                 displayProducts(data);
             } catch (errorData) {
