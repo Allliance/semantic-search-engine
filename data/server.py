@@ -68,21 +68,21 @@ class ProductData(BaseModel):
         
 
 def initialize_product_manager():
-    global product_manager
+    global product_manager, text_search_manager
     db = next(get_db())
     product_manager = ProductManager(db, PRODUCTS_FILE)
+    
+    
+    
+    all_products = [Product(product.to_dict()) for product in product_manager.get_all_products()]
+    
+    text_search_manager.index_products(all_products)
 
   
-async def initialize_search_manager():
-    global text_search_manager, product_manager
+def initialize_search_manager():
+    global text_search_manager
     
-    text_search_manager = TextSearchManager(
-        meilisearch_url="http://185.202.113.188:7700",#os.getenv("MEILISEARCH_URL"),
-        master_key="masterKey123",#os.getenv("MEILISEARCH_MASTER_KEY"),
-        index_name="products"
-    )
-    
-    await text_search_manager.index_products(product_manager)
+    text_search_manager = TextSearchManager()
 
 def initialize_database():
         
@@ -151,10 +151,8 @@ def index_single_product(product: Product) -> Dict:
 async def startup_event():
     initialize_database()
     initialize_service()
+    initialize_search_manager()
     initialize_product_manager()
-    
-    if HYBRID_SEARCH:
-        await initialize_search_manager()
 
 @app.get("/health")
 async def health_check():
@@ -197,28 +195,19 @@ async def get_enums(db: Session = Depends(get_db)):
     }
 
 @app.post("/keyword_search")
-async def keyword_search(
+def keyword_search(
     query_request: KeywordRequest,
     db: Session = Depends(get_db)
 ):
     try:
-        search_results = await text_search_manager.search(
+        search_results = text_search_manager.search_products(
             keyword=query_request.keyword,
             filters=query_request.filters
         )
         
-        print(search_results['hits'])
-        
         return search_results['hits']
-        return {
-            "status": "success",
-            "hits": search_results['hits'],
-            "total_hits": search_results['estimatedTotalHits'],
-            "processing_time_ms": search_results['processingTimeMs']
-        }
     except Exception as e:
         print(str(e))
-        raise(e)
         raise HTTPException(status_code=500, detail=str(e))
 
 @app.post("/semantic_search")
