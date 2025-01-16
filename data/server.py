@@ -13,6 +13,7 @@ from product_manager import ProductManager
 from index import Index
 from encoder import Encoder
 from utils import rank_products
+import os
 
 # Load environment variables
 load_dotenv()
@@ -70,8 +71,8 @@ def initialize_search_manager():
     global text_search_manager, product_manager
     
     text_search_manager = TextSearchManager(
-        meilisearch_url="http://localhost:7700",
-        master_key="master_key",
+        meilisearch_url=os.getenv("MEILISEARCH_URL"),
+        master_key=os.getenv("MEILISEARCH_MASTER_KEY"),
         index_name="products"
     )
     
