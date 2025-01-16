@@ -21,4 +21,4 @@ RUN python manage.py migrate && \
     python manage.py collectstatic --noinput
 
 # Run the application
-CMD ["ls && pwd &&", "python", "manage.py", "runserver", "0.0.0.0:8000"]
+CMD ["gunicorn", "semantic_search_backend.wsgi:application", "--bind", "0.0.0.0:8000"]

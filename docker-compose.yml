@@ -86,6 +86,10 @@ services:
       - ./backend:/app
     depends_on:
       - data-service
+    command: >
+      sh -c "python manage.py migrate &&
+             python manage.py collectstatic --noinput &&
+             gunicorn semantic_search_backend.wsgi:application --bind 0.0.0.0:8000 --workers 3 --timeout 120"
     restart: on-failure
 
 volumes:
