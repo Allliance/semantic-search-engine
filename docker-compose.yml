@@ -86,7 +86,7 @@ services:
       - ./backend:/app
     depends_on:
       - data-service
-    command: python manage.py runserver 0.0.0.0:8000
+    command: python manage2.py runserver 0.0.0.0:8000
     restart: on-failure
 
 volumes:
