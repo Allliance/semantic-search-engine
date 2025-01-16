@@ -70,7 +70,7 @@ services:
     restart: unless-stopped
 
   backend:
-    build: ./searchengine
+    build: ./search_engine
     ports:
       - "8000:8000"
     environment:
